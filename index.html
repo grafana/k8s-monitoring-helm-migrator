@@ -1,0 +1,42 @@
+<html>
+<head>
+  <title>k8s-monitoring Helm Chart migration utility</title>
+  <style>
+      .container {
+          display: flex;
+          height: 100%;
+      }
+      .column {
+          flex: 1;
+          padding: 10px;
+      }
+      textarea {
+          width: 100%;
+          height: 80%;
+      }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<div class="container">
+  <h1>K8s Monitoring Helm Chart migration utility</h1>
+  <div class="column">
+    <h2>values.yaml <= 1.x.x</h2>
+    <textarea id="left-textarea"></textarea>
+  </div>
+  <div class="column">
+    <h2>values.yaml 2.x.x</h2>
+    <textarea id="right-textarea"></textarea>
+  </div>
+</div>
+
+<script src="./migrate.js"></script>
+<script>
+    document.getElementById('left-textarea').addEventListener('input', function() {
+        const oldValues = jsyaml.load(this.value);
+        const newValues = migrate(oldValues);
+        document.getElementById('right-textarea').value = jsyaml.dump(newValues);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+cluster:
+  name: custom-config-test
+destinations:
+  - name: metricsService
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    extraLabels:
+      region: southwest
+      tenant: widgetco
+    extraLabelsFrom:
+      env: remote.kubernetes.configmap.cluster_info.data["env"]
+      region: remote.kubernetes.configmap.cluster_info.data["region"]
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  - name: logsService
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  - name: profilesService
+    type: pyroscope
+    url: https://pyroscope.example.com
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+clusterMetrics:
+  enabled: true
+podLogs:
+  enabled: true
+clusterEvents:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+alloy-metrics:
+  enabled: true
+alloy-logs:
+  enabled: true
+alloy-singleton:
+  enabled: true
+

@@ -1,0 +1,54 @@
+cluster:
+  name: specific-namespace-test
+destinations:
+  - name: metricsService
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  - name: logsService
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+clusterMetrics:
+  enabled: true
+podLogs:
+  enabled: true
+  namespaces:
+    - production
+    - staging
+clusterEvents:
+  enabled: true
+  namespaces:
+    - production
+    - staging
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  podMonitors:
+    namespaces:
+      - production
+      - staging
+  probes:
+    namespaces:
+      - production
+      - staging
+  serviceMonitors:
+    namespaces:
+      - production
+      - staging
+alloy-metrics:
+  enabled: true
+alloy-logs:
+  enabled: true
+alloy-singleton:
+  enabled: true
+

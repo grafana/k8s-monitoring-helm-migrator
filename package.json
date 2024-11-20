@@ -1,0 +1,11 @@
+{
+  "name": "k8s-monitoring-helm-migrator",
+  "version": "1.0.0",
+  "description": "This repo contains a utility to migrate values files from v1 to v2. It's meant to be a best-effort migration utility and might not result in an optimal solution.",
+  "main": "convert.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

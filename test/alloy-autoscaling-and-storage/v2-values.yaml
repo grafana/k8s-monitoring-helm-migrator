@@ -1,0 +1,77 @@
+cluster:
+  name: alloy-autoscaling-and-storage-test
+destinations:
+  - name: metricsService
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  - name: logsService
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+clusterMetrics:
+  enabled: true
+podLogs:
+  enabled: true
+clusterEvents:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+alloy-metrics:
+  alloy:
+    resources:
+      requests:
+        cpu: 1m
+        memory: 500Mi
+    storagePath: /var/lib/alloy
+    mounts:
+      extra:
+        - name: alloy-wal
+          mountPath: /var/lib/alloy
+  controller:
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 0
+      targetMemoryUtilizationPercentage: 80
+    enableStatefulSetAutoDeletePVC: true
+    volumeClaimTemplates:
+      - metadata:
+          name: alloy-wal
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: standard
+          resources:
+            requests:
+              storage: 5Gi
+  enabled: true
+alloy-logs:
+  alloy:
+    storagePath: /var/lib/alloy
+    mounts:
+      extra:
+        - name: alloy-log-positions
+          mountPath: /var/lib/alloy
+  controller:
+    volumes:
+      extra:
+        - name: alloy-log-positions
+          hostPath:
+            path: /var/alloy-log-storage
+            type: DirectoryOrCreate
+  enabled: true
+alloy-singleton:
+  enabled: true
+

@@ -1,0 +1,19 @@
+cluster:
+  name: logs-journal
+destinations:
+  - name: logsService
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: '12345'
+      password: It's a secret to everyone
+podLogs:
+  enabled: true
+clusterEvents:
+  enabled: true
+alloy-logs:
+  enabled: true
+alloy-singleton:
+  enabled: true
+

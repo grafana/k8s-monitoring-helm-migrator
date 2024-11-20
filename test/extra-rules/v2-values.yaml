@@ -1,0 +1,83 @@
+cluster:
+  name: extra-rules-test
+destinations:
+  - name: metricsService
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    extraLabels:
+      site: northwest
+    metricProcessingRules: |-
+      write_relabel_config {
+        source_labels = ["__name__"]
+        regex = "metric_to_drop|another_metric_to_drop"
+        action = "drop"
+      }
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  - name: logsService
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    tenantId: 2000
+    auth:
+      type: basic
+      username: '12345'
+      password: It's a secret to everyone
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    extraMetricProcessingRules: |-
+      rule {
+        source_labels = ["namespace"]
+        regex = "production"
+        action = "keep"
+      }
+podLogs:
+  enabled: true
+  extraDiscoveryRules: |-
+    rule {
+      source_labels = ["__meta_kubernetes_namespace"]
+      regex = "production"
+      action = "keep"
+    }
+  extraLogProcessingStages: |-
+    stage.logfmt {
+      payload = ""
+    }
+
+    stage.json {
+      source = "payload"
+      expressions = {
+        sku = "id",
+        count = "",
+      }
+    }
+
+    stage.static {
+      values = {
+        site = {{ .Values.externalServices.prometheus.externalLabels.site | quote }},
+      }
+    }
+
+    stage.labels {
+      values = {
+        sku  = "",
+        count = "",
+      }
+    }
+clusterEvents:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+alloy-metrics:
+  enabled: true
+alloy-logs:
+  enabled: true
+alloy-singleton:
+  enabled: true
+

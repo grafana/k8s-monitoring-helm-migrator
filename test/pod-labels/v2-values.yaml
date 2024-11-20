@@ -1,0 +1,55 @@
+cluster:
+  name: pod-labels-test
+destinations:
+  - name: metricsService
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  - name: logsService
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  - name: tracesService
+    type: otlp
+    url: https://tempo.example.com
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    metricLabelsAllowlist:
+      - pods=[*]
+    metricsTuning:
+      includeMetrics:
+        - kube_pod_labels
+podLogs:
+  enabled: true
+  extraDiscoveryRules: |
+    rule {
+      source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_instance"]
+      action = "replace"
+      target_label = "instance"
+    }
+clusterEvents:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+alloy-metrics:
+  enabled: true
+alloy-logs:
+  enabled: true
+alloy-singleton:
+  enabled: true
+

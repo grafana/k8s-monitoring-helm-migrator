@@ -1,0 +1,47 @@
+cluster:
+  name: ibm-cloud-test
+destinations:
+  - name: metricsService
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  - name: logsService
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+clusterMetrics:
+  enabled: true
+podLogs:
+  enabled: true
+clusterEvents:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+alloy-metrics:
+  enabled: true
+alloy-logs:
+  alloy:
+    mounts:
+      extra:
+        - name: vardata
+          mountPath: /var/data
+  controller:
+    volumes:
+      extra:
+        - name: vardata
+          hostPath:
+            path: /var/data
+  enabled: true
+alloy-singleton:
+  enabled: true
+
