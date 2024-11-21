@@ -567,8 +567,10 @@ function migrateClusterMetrics(oldValues) {
         delete results.clusterMetrics["node-exporter"].enabled
     }
     if (oldValues["opencost"]) {
-        results.clusterMetrics.opencost = oldValues["opencost"];
-        results.clusterMetrics.opencost.opencost.prometheus.existingSecretName = "grafana-k8s-monitoring-metricsservice"
+        results.clusterMetrics.opencost = oldValues.opencost;
+        if (oldValues.opencost.opencost && oldValues.opencost.opencost.prometheus) {
+            results.clusterMetrics.opencost.opencost.prometheus.existingSecretName = "grafana-k8s-monitoring-metricsservice"
+        }
     }
 
     // Metrics targets
