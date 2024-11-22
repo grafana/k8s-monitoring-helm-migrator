@@ -30,6 +30,12 @@ clusterMetrics:
     metricsTuning:
       includeMetrics:
         - kube_pod_labels
+alloy-metrics:
+  enabled: true
+clusterEvents:
+  enabled: true
+alloy-singleton:
+  enabled: true
 podLogs:
   enabled: true
   extraDiscoveryRules: |
@@ -38,7 +44,7 @@ podLogs:
       action = "replace"
       target_label = "instance"
     }
-clusterEvents:
+alloy-logs:
   enabled: true
 annotationAutodiscovery:
   enabled: true
@@ -46,10 +52,4 @@ prometheusOperatorObjects:
   enabled: true
   crds:
     deploy: true
-alloy-metrics:
-  enabled: true
-alloy-logs:
-  enabled: true
-alloy-singleton:
-  enabled: true
 

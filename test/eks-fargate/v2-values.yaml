@@ -20,19 +20,15 @@ clusterMetrics:
   node-exporter:
     deploy: false
     enabled: false
+alloy-metrics:
+  enabled: true
+clusterEvents:
+  enabled: true
+alloy-singleton:
+  enabled: true
 podLogs:
   enabled: true
   gatherMethod: kubernetesApi
-clusterEvents:
-  enabled: true
-annotationAutodiscovery:
-  enabled: true
-prometheusOperatorObjects:
-  enabled: true
-  crds:
-    deploy: true
-alloy-metrics:
-  enabled: true
 alloy-logs:
   alloy:
     clustering:
@@ -43,6 +39,10 @@ alloy-logs:
     replicas: 2
     type: deployment
   enabled: true
-alloy-singleton:
+annotationAutodiscovery:
   enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
 

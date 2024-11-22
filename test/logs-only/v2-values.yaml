@@ -9,12 +9,12 @@ destinations:
       type: basic
       username: '12345'
       password: It's a secret to everyone
-podLogs:
-  enabled: true
 clusterEvents:
   enabled: true
-alloy-logs:
-  enabled: true
 alloy-singleton:
+  enabled: true
+podLogs:
+  enabled: true
+alloy-logs:
   enabled: true
 

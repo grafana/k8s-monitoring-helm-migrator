@@ -24,18 +24,24 @@ destinations:
       password: It's a secret to everyone
 clusterMetrics:
   enabled: true
-podLogs:
+alloy-metrics:
   enabled: true
 clusterEvents:
   enabled: true
+alloy-singleton:
+  enabled: true
+podLogs:
+  enabled: true
+alloy-logs:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+autoInstrumentation:
+  enabled: true
+  beyla:
+    enabled: true
 prometheusOperatorObjects:
   enabled: true
   crds:
     deploy: true
-alloy-metrics:
-  enabled: true
-alloy-logs:
-  enabled: true
-alloy-singleton:
-  enabled: true
 

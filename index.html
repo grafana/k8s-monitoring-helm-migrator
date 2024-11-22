@@ -16,6 +16,7 @@
       }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
 </head>
 <body>
 <h1>K8s Monitoring Helm Chart migration utility</h1>
@@ -41,12 +42,6 @@
 </div>
 
 <script src="./migrate.js"></script>
-<script>
-    document.getElementById('left-textarea').addEventListener('input', function() {
-        const oldValues = jsyaml.load(this.value);
-        const newValues = migrate(oldValues);
-        document.getElementById('right-textarea').value = jsyaml.dump(newValues);
-    });
-</script>
+<script src="./web.js"></script>
 </body>
 </html>

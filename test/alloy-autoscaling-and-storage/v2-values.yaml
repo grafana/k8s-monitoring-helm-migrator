@@ -17,16 +17,6 @@ destinations:
       password: It's a secret to everyone
 clusterMetrics:
   enabled: true
-podLogs:
-  enabled: true
-clusterEvents:
-  enabled: true
-annotationAutodiscovery:
-  enabled: true
-prometheusOperatorObjects:
-  enabled: true
-  crds:
-    deploy: true
 alloy-metrics:
   alloy:
     resources:
@@ -57,6 +47,12 @@ alloy-metrics:
             requests:
               storage: 5Gi
   enabled: true
+clusterEvents:
+  enabled: true
+alloy-singleton:
+  enabled: true
+podLogs:
+  enabled: true
 alloy-logs:
   alloy:
     storagePath: /var/lib/alloy
@@ -72,6 +68,10 @@ alloy-logs:
             path: /var/alloy-log-storage
             type: DirectoryOrCreate
   enabled: true
-alloy-singleton:
+annotationAutodiscovery:
   enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
 

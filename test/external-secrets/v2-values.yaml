@@ -1,0 +1,42 @@
+cluster:
+  name: external-secrets-test
+destinations:
+  - name: metricsService
+    type: prometheus
+    secret:
+      create: false
+      name: alloy-secret
+      namespace: monitoring
+    auth:
+      type: basic
+      usernameKey: prom_username
+      passwordKey: password
+  - name: logsService
+    type: loki
+    secret:
+      create: false
+      name: alloy-secret
+      namespace: monitoring
+    auth:
+      type: basic
+      usernameKey: loki_username
+      passwordKey: password
+clusterMetrics:
+  enabled: true
+alloy-metrics:
+  enabled: true
+clusterEvents:
+  enabled: true
+alloy-singleton:
+  enabled: true
+podLogs:
+  enabled: true
+alloy-logs:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+

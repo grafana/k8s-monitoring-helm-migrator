@@ -1,0 +1,117 @@
+cluster:
+  name: openshift-compatible-test
+global:
+  platform: openshift
+destinations:
+  - name: metricsService
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    proxyURL: http://192.168.1.100:8080
+    auth:
+      type: basic
+      username: '12345'
+      password: It's a secret to everyone
+  - name: logsService
+    type: loki
+    url: https://prometheus.example.com/loki/api/v1/push
+    proxyURL: http://192.168.1.100:8080
+    auth:
+      type: basic
+      username: '12345'
+      password: It's a secret to everyone
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    deploy: false
+  node-exporter:
+    deploy: false
+alloy-metrics:
+  alloy:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - CHOWN
+          - DAC_OVERRIDE
+          - FOWNER
+          - FSETID
+          - KILL
+          - SETGID
+          - SETUID
+          - SETPCAP
+          - NET_BIND_SERVICE
+          - NET_RAW
+          - SYS_CHROOT
+          - MKNOD
+          - AUDIT_WRITE
+          - SETFCAP
+      seccompProfile:
+        type: RuntimeDefault
+  enabled: true
+clusterEvents:
+  enabled: true
+alloy-singleton:
+  alloy:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - CHOWN
+          - DAC_OVERRIDE
+          - FOWNER
+          - FSETID
+          - KILL
+          - SETGID
+          - SETUID
+          - SETPCAP
+          - NET_BIND_SERVICE
+          - NET_RAW
+          - SYS_CHROOT
+          - MKNOD
+          - AUDIT_WRITE
+          - SETFCAP
+      seccompProfile:
+        type: RuntimeDefault
+  enabled: true
+podLogs:
+  enabled: true
+alloy-logs:
+  alloy:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - CHOWN
+          - DAC_OVERRIDE
+          - FOWNER
+          - FSETID
+          - KILL
+          - SETGID
+          - SETUID
+          - SETPCAP
+          - NET_BIND_SERVICE
+          - NET_RAW
+          - SYS_CHROOT
+          - MKNOD
+          - AUDIT_WRITE
+          - SETFCAP
+      privileged: false
+      runAsUser: 0
+  global:
+    podSecurityContext:
+      seLinuxOptions:
+        type: spc_t
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+

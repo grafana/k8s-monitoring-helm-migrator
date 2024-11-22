@@ -34,12 +34,12 @@ clusterMetrics:
       useDefaultAllowList: false
       excludeMetrics:
         - go_*
+alloy-metrics:
+  enabled: true
 annotationAutodiscovery:
   enabled: true
 prometheusOperatorObjects:
   enabled: true
   crds:
     deploy: true
-alloy-metrics:
-  enabled: true
 

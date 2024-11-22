@@ -4,6 +4,11 @@ destinations:
   - name: metricsService
     type: prometheus
     url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: sigv4
+      sigv4:
+        accessKey: aws_access_key_string
+        secretKey: aws_secret_access_key_string
   - name: logsService
     type: loki
     url: https://loki.example.com/loki/api/v1/push
@@ -13,9 +18,15 @@ destinations:
       password: It's a secret to everyone
 clusterMetrics:
   enabled: true
-podLogs:
+alloy-metrics:
   enabled: true
 clusterEvents:
+  enabled: true
+alloy-singleton:
+  enabled: true
+podLogs:
+  enabled: true
+alloy-logs:
   enabled: true
 annotationAutodiscovery:
   enabled: true
@@ -23,10 +34,4 @@ prometheusOperatorObjects:
   enabled: true
   crds:
     deploy: true
-alloy-metrics:
-  enabled: true
-alloy-logs:
-  enabled: true
-alloy-singleton:
-  enabled: true
 

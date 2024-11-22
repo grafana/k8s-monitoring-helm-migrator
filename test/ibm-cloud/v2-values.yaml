@@ -17,17 +17,13 @@ destinations:
       password: It's a secret to everyone
 clusterMetrics:
   enabled: true
-podLogs:
+alloy-metrics:
   enabled: true
 clusterEvents:
   enabled: true
-annotationAutodiscovery:
+alloy-singleton:
   enabled: true
-prometheusOperatorObjects:
-  enabled: true
-  crds:
-    deploy: true
-alloy-metrics:
+podLogs:
   enabled: true
 alloy-logs:
   alloy:
@@ -42,6 +38,10 @@ alloy-logs:
           hostPath:
             path: /var/data
   enabled: true
-alloy-singleton:
+annotationAutodiscovery:
   enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
 

@@ -10,6 +10,8 @@ destinations:
       password: It's a secret to everyone
 clusterMetrics:
   enabled: true
+alloy-metrics:
+  enabled: true
 annotationAutodiscovery:
   enabled: true
 prometheusOperatorObjects:
@@ -47,6 +49,4 @@ prometheusOperatorObjects:
         replacement = "$1"
         target_label = "team"
       }
-alloy-metrics:
-  enabled: true
 

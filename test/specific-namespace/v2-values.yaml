@@ -17,16 +17,22 @@ destinations:
       password: It's a secret to everyone
 clusterMetrics:
   enabled: true
-podLogs:
+alloy-metrics:
   enabled: true
-  namespaces:
-    - production
-    - staging
 clusterEvents:
   enabled: true
   namespaces:
     - production
     - staging
+alloy-singleton:
+  enabled: true
+podLogs:
+  enabled: true
+  namespaces:
+    - production
+    - staging
+alloy-logs:
+  enabled: true
 annotationAutodiscovery:
   enabled: true
 prometheusOperatorObjects:
@@ -45,10 +51,4 @@ prometheusOperatorObjects:
     namespaces:
       - production
       - staging
-alloy-metrics:
-  enabled: true
-alloy-logs:
-  enabled: true
-alloy-singleton:
-  enabled: true
 

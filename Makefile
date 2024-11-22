@@ -8,7 +8,9 @@ copyOriginals:
   		cp $${valuesFile} test/$$(basename $$(dirname $${valuesFile}))/v1-values.yaml; \
 	done
 
-%/v2-values.yaml: %/v1-values.yaml
-	node convert.js $< > $@
+%/v2-values.yaml: %/v1-values.yaml cli.js migrate.js
+	node cli.js $< > $@
 
 build: $(V2_VALUES)
+clean:
+	rm $(V2_VALUES)
