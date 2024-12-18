@@ -1,9 +1,14 @@
 function migrateCluster(oldValues) {
-    return {
+    const values = {
         cluster: {
             name: oldValues.cluster.name
         }
+    };
+    const notes = [];
+    if (oldValues.cluster.kubernetesAPIService) {
+        notes.push("cluster.kubernetesAPIService is not used in the new chart.");
     }
+    return { values, notes };
 }
 
 function migrateGlobals(oldValues) {
@@ -32,24 +37,31 @@ function migrateGlobals(oldValues) {
 }
 
 function migrateDestinations(oldValues) {
-    const newValues = {
-        destinations: []
-    }
+    const destinations = [];
+    const notes = [];
     if (oldValues["externalServices"]) {
         if (oldValues.externalServices["prometheus"]) {
-            newValues.destinations.push(migratePrometheus(oldValues.externalServices.prometheus));
+            const result = migratePrometheus(oldValues.externalServices.prometheus);
+            destinations.push(result.destination);
+            notes.push(...result.notes);
         }
         if (oldValues.externalServices["loki"]) {
-            newValues.destinations.push(migrateLoki(oldValues.externalServices.loki));
+            const result = migrateLoki(oldValues.externalServices.loki);
+            destinations.push(result.destination);
+            notes.push(...result.notes);
         }
         if (oldValues.externalServices["tempo"]) {
-            newValues.destinations.push(migrateTempo(oldValues.externalServices.tempo));
+            const result = migrateTempo(oldValues.externalServices.tempo);
+            destinations.push(result.destination);
+            notes.push(...result.notes);
         }
         if (oldValues.externalServices["pyroscope"]) {
-            newValues.destinations.push(migratePyroscope(oldValues.externalServices.pyroscope));
+            const result = migratePyroscope(oldValues.externalServices.pyroscope);
+            destinations.push(result.destination);
+            notes.push(...result.notes);
         }
     }
-    return newValues;
+    return {values: {destinations}, notes};
 }
 
 function migratePrometheus(prometheus) {
@@ -58,6 +70,7 @@ function migratePrometheus(prometheus) {
         name: "metricsService",
         type: "prometheus"
     };
+    const notes = [];
 
     if (protocol === "otlp") {
         destination.type = "otlp";
@@ -76,7 +89,7 @@ function migratePrometheus(prometheus) {
         destination.url = prometheus.host + path;
     }
     if (prometheus.hostKey) {
-        console.error(`externalServices.${destination.type}.hostKey is not supported in the new chart. Please set the host directly:\ndestinations:\n- name: ${destination.name}\n  type: ${destination.type}\n  url: <host>/<writeEndpoint>`);
+        notes.push(`ERROR: externalServices.${destination.type}.hostKey is not supported in the new chart. Please set the host directly:\ndestinations:\n- name: ${destination.name}\n  type: ${destination.type}\n  url: <host>/<writeEndpoint>`);
     }
 
     if (prometheus.secret) {
@@ -97,7 +110,7 @@ function migratePrometheus(prometheus) {
     }
 
     if (prometheus.queryEndpoint) {
-        console.log("externalServices.prometheus.queryEndpoint is not used in the new chart.");
+        notes.push("externalServices.prometheus.queryEndpoint is not used in the new chart.");
     }
 
     destination.extraHeaders = prometheus.extraHeaders;
@@ -112,31 +125,18 @@ function migratePrometheus(prometheus) {
 
     const authMode = prometheus.authMode || "basic";
     if (authMode === "basic") {
-        destination.auth = {
-            type: "basic",
-        };
+        destination.auth = { type: "basic" };
         if (prometheus.basicAuth.username)      { destination.auth.username = prometheus.basicAuth.username; }
         if (prometheus.basicAuth.usernameKey)   { destination.auth.usernameKey = prometheus.basicAuth.usernameKey; }
         if (prometheus.basicAuth.password)      { destination.auth.password = prometheus.basicAuth.password; }
         if (prometheus.basicAuth.passwordKey)   { destination.auth.passwordKey = prometheus.basicAuth.passwordKey; }
     } else if (authMode === "bearerToken") {
-        destination.auth = {
-            type: "bearerToken",
-        };
-        if (prometheus.bearerToken.token) {
-            destination.auth.bearerToken = prometheus.bearerToken.token;
-        }
-        if (prometheus.bearerToken.tokenKey) {
-            destination.auth.bearerTokenKey = prometheus.bearerToken.tokenKey;
-        }
-        if (prometheus.bearerToken.tokenFile) {
-            destination.bearerTokenFile = prometheus.bearerToken.tokenFile;
-        }
+        destination.auth = { type: "bearerToken" };
+        if (prometheus.bearerToken.token)       { destination.auth.bearerToken = prometheus.bearerToken.token; }
+        if (prometheus.bearerToken.tokenKey)    { destination.auth.bearerTokenKey = prometheus.bearerToken.tokenKey; }
+        if (prometheus.bearerToken.tokenFile)   { destination.bearerTokenFile = prometheus.bearerToken.tokenFile; }
     } else if (authMode === "sigv4") {
-        destination.auth = {
-            type: "sigv4",
-            sigv4: {}
-        };
+        destination.auth = { type: "sigv4", sigv4: {}};
         destination.auth.sigv4.accessKey = prometheus.sigv4.accessKey;
         destination.auth.sigv4.profile = prometheus.sigv4.profile;
         destination.auth.sigv4.region = prometheus.sigv4.region;
@@ -144,7 +144,18 @@ function migratePrometheus(prometheus) {
         destination.auth.sigv4.secretKey = prometheus.sigv4.secretKey;
         destination.auth.sigv4.secretKeyKey = prometheus.sigv4.secretKeyKey;
     } else if (authMode === "oauth2") {
-        throw new Error("externalServices.prometheus.authMode == oauth2 migration is not yet supported");
+        if (prometheus.oauth2.clientId)               { destination.auth.oauth2.clientId = prometheus.oauth2.clientId; }
+        if (prometheus.oauth2.clientIdKey)            { destination.auth.oauth2.clientIdKey = prometheus.oauth2.clientIdKey; }
+        if (prometheus.oauth2.clientSecret)           { destination.auth.oauth2.clientSecret = prometheus.oauth2.clientSecret; }
+        if (prometheus.oauth2.clientSecretKey)        { destination.auth.oauth2.clientSecretKey = prometheus.oauth2.clientSecretKey; }
+        if (prometheus.oauth2.clientSecretFile)       { destination.auth.oauth2.clientSecretFile = prometheus.oauth2.clientSecretFile; }
+        if (prometheus.oauth2.endpointParams)         { destination.auth.oauth2.endpointParams = prometheus.oauth2.endpointParams; }
+        if (prometheus.oauth2.proxyURL)               { destination.auth.oauth2.proxyURL = prometheus.oauth2.proxyURL; }
+        if (prometheus.oauth2.noProxy)                { destination.auth.oauth2.noProxy = prometheus.oauth2.noProxy; }
+        if (prometheus.oauth2.proxyFromEnvironment)   { destination.auth.oauth2.proxyFromEnvironment = prometheus.oauth2.proxyFromEnvironment; }
+        if (prometheus.oauth2.proxyConnectHeader)     { destination.auth.oauth2.proxyConnectHeader = prometheus.oauth2.proxyConnectHeader; }
+        if (prometheus.oauth2.scopes)                 { destination.auth.oauth2.scopes = prometheus.oauth2.scopes; }
+        if (prometheus.oauth2.tokenURL)               { destination.auth.oauth2.tokenURL = prometheus.oauth2.tokenURL; }
     }
 
     if (prometheus.tls) {
@@ -200,17 +211,17 @@ function migratePrometheus(prometheus) {
         }
 
         if (prometheus.wal) {
-            throw new Error("prometheus.wal is not yet available in v2");
+            if (prometheus.wal.truncateFrequency)   { destination.writeAheadLog.truncateFrequency = prometheus.wal.truncateFrequency; }
+            if (prometheus.wal.minKeepaliveTime)    { destination.writeAheadLog.minKeepaliveTime = prometheus.wal.minKeepaliveTime; }
+            if (prometheus.wal.maxKeepaliveTime)    { destination.writeAheadLog.maxKeepaliveTime = prometheus.wal.maxKeepaliveTime; }
         }
 
         if (prometheus.openTelemetryConversion) {
             destination.openTelemetryConversion = prometheus.openTelemetryConversion;
         }
-    } else {
-        throw new Error("prometheus.processors are not yet available in v2 otlp destinations")
     }
 
-    return destination;
+    return {destination, notes};
 }
 
 function migrateLoki(loki) {
@@ -219,6 +230,7 @@ function migrateLoki(loki) {
         name: "logsService",
         type: "loki"
     };
+    const notes = [];
 
     if (protocol === "otlp") {
         destination.type = "otlp";
@@ -236,7 +248,7 @@ function migrateLoki(loki) {
         const path = loki.writeEndpoint ? loki.writeEndpoint : "/loki/api/v1/push";
         destination.url = loki.host + path;
     } else if (loki.hostKey) {
-        console.error(`externalServices.${destination.type}.hostKey is not supported in the new chart. Please set the host directly:\ndestinations:\n- name: ${destination.name}\n  type: ${destination.type}\n  url: <host>/<writeEndpoint>`);
+        notes.push(`ERROR: externalServices.${destination.type}.hostKey is not supported in the new chart. Please set the host directly:\ndestinations:\n- name: ${destination.name}\n  type: ${destination.type}\n  url: <host>/<writeEndpoint>`);
     }
 
     if (loki.secret) {
@@ -255,7 +267,7 @@ function migrateLoki(loki) {
     destination.proxyURL = loki.proxyURL;
 
     if (loki.queryEndpoint) {
-        console.log("externalServices.loki.queryEndpoint is not used in the new chart.");
+        notes.push("externalServices.loki.queryEndpoint is not used in the new chart.");
     }
 
     destination.extraHeaders = loki.extraHeaders;
@@ -267,15 +279,30 @@ function migrateLoki(loki) {
 
     const authMode = loki.authMode || "basic";
     if (authMode === "basic") {
-        destination.auth = {
-            type: "basic",
-        };
+        destination.auth = { type: "basic" };
         if (loki.basicAuth.username)    { destination.auth.username = loki.basicAuth.username; }
         if (loki.basicAuth.usernameKey) { destination.auth.usernameKey = loki.basicAuth.usernameKey; }
         if (loki.basicAuth.password)    { destination.auth.password = loki.basicAuth.password; }
         if (loki.basicAuth.passwordKey) { destination.auth.passwordKey = loki.basicAuth.passwordKey; }
+    } else if (authMode === "bearerToken") {
+        destination.auth = { type: "bearerToken" };
+        if (loki.bearerToken.token)     { destination.auth.bearerToken = loki.bearerToken.token; }
+        if (loki.bearerToken.tokenKey)  { destination.auth.bearerTokenKey = loki.bearerToken.tokenKey; }
+        if (loki.bearerToken.tokenFile) { destination.auth.bearerTokenFile = loki.bearerToken.tokenFile; }
     } else if (authMode === "oauth2") {
-        throw new Error("externalServices.loki.authMode == oauth2 migration is not yet supported");
+        destination.auth = { type: "oauth2" };
+        if (loki.oauth2.clientId)               { destination.auth.oauth2.clientId = loki.oauth2.clientId; }
+        if (loki.oauth2.clientIdKey)            { destination.auth.oauth2.clientIdKey = loki.oauth2.clientIdKey; }
+        if (loki.oauth2.clientSecret)           { destination.auth.oauth2.clientSecret = loki.oauth2.clientSecret; }
+        if (loki.oauth2.clientSecretKey)        { destination.auth.oauth2.clientSecretKey = loki.oauth2.clientSecretKey; }
+        if (loki.oauth2.clientSecretFile)       { destination.auth.oauth2.clientSecretFile = loki.oauth2.clientSecretFile; }
+        if (loki.oauth2.endpointParams)         { destination.auth.oauth2.endpointParams = loki.oauth2.endpointParams; }
+        if (loki.oauth2.proxyURL)               { destination.auth.oauth2.proxyURL = loki.oauth2.proxyURL; }
+        if (loki.oauth2.noProxy)                { destination.auth.oauth2.noProxy = loki.oauth2.noProxy; }
+        if (loki.oauth2.proxyFromEnvironment)   { destination.auth.oauth2.proxyFromEnvironment = loki.oauth2.proxyFromEnvironment; }
+        if (loki.oauth2.proxyConnectHeader)     { destination.auth.oauth2.proxyConnectHeader = loki.oauth2.proxyConnectHeader; }
+        if (loki.oauth2.scopes)                 { destination.auth.oauth2.scopes = loki.oauth2.scopes; }
+        if (loki.oauth2.tokenURL)               { destination.auth.oauth2.tokenURL = loki.oauth2.tokenURL; }
     }
 
     if (loki.tls) {
@@ -294,23 +321,24 @@ function migrateLoki(loki) {
         if (loki.tls.keyFrom)   { destination.tls.keyFrom = loki.tls.keyFrom; }
     }
 
-    if (protocol !== "loki") {
-        throw new Error("prometheus.processors are not yet available in v2 otlp destinations")
-    }
-
-    return destination;
+    return {destination, notes};
 }
 
 function migrateTempo(tempo) {
     const destination = {
         name: "tracesService",
-        type: "otlp"
+        type: "otlp",
+        protocol: tempo.protocol,
+        metrics: { enabled: false },
+        logs: { enabled: false },
+        traces: { enabled: true }
     };
+    const notes = [];
     if (tempo.host) {
         destination.url = tempo.host;
     }
     if (tempo.hostKey) {
-        console.error(`externalServices.${destination.type}.hostKey is not supported in the new chart. Please set the host directly:\ndestinations:\n- name: ${destination.name}\n  type: ${destination.type}\n  url: <host>/<writeEndpoint>`);
+        notes.push(`ERROR: externalServices.${destination.type}.hostKey is not supported in the new chart. Please set the host directly:\ndestinations:\n- name: ${destination.name}\n  type: ${destination.type}\n  url: <host>/<writeEndpoint>`);
     }
 
     if (tempo.secret) {
@@ -329,7 +357,7 @@ function migrateTempo(tempo) {
     destination.proxyURL = tempo.proxyURL;
 
     if (tempo.searchEndpoint) {
-        console.log("externalServices.tempo.searchEndpoint is not used in the new chart.");
+        notes.push("externalServices.tempo.searchEndpoint is not used in the new chart.");
     }
 
     destination.extraHeaders = tempo.extraHeaders;
@@ -339,13 +367,15 @@ function migrateTempo(tempo) {
 
     const authMode = tempo.authMode || "basic";
     if (authMode === "basic") {
-        destination.auth = {
-            type: "basic",
-        };
+        destination.auth = { type: "basic" };
         if (tempo.basicAuth.username)       { destination.auth.username = tempo.basicAuth.username; }
         if (tempo.basicAuth.usernameKey)    { destination.auth.usernameKey = tempo.basicAuth.usernameKey; }
         if (tempo.basicAuth.password)       { destination.auth.password = tempo.basicAuth.password; }
         if (tempo.basicAuth.passwordKey)    { destination.auth.passwordKey = tempo.basicAuth.passwordKey; }
+    } else if (authMode === "bearerToken") {
+        destination.auth = { type: "bearerToken" };
+        if (tempo.bearerToken.token)        { destination.auth.bearerToken = tempo.bearerToken.token; }
+        if (tempo.bearerToken.tokenKey)     { destination.auth.bearerTokenKey = tempo.bearerToken.tokenKey; }
     }
 
     if (tempo.tls) {
@@ -364,10 +394,10 @@ function migrateTempo(tempo) {
         if (tempo.tls.keyFrom)  { destination.tls.keyFrom = tempo.tls.keyFrom; }
     }
     if (tempo.tlsOptions) {
-        console.error("externalServices.tempo.tlsOptions is deprecated. Please use externalServices.tempo.tls instead.");
+        notes.push("ERROR: externalServices.tempo.tlsOptions is deprecated. Please use externalServices.tempo.tls instead.");
     }
 
-    return destination;
+    return {destination, notes};
 }
 
 function migratePyroscope(pyroscope) {
@@ -375,11 +405,12 @@ function migratePyroscope(pyroscope) {
         name: "profilesService",
         type: "pyroscope"
     };
+    const notes = [];
     if (pyroscope.host) {
         destination.url = pyroscope.host;
     }
     if (pyroscope.hostKey) {
-        console.error(`externalServices.${destination.type}.hostKey is not supported in the new chart. Please set the host directly:\ndestinations:\n- name: ${destination.name}\n  type: ${destination.type}\n  url: <host>/<writeEndpoint>`);
+        notes.push(`ERROR: externalServices.${destination.type}.hostKey is not supported in the new chart. Please set the host directly:\ndestinations:\n- name: ${destination.name}\n  type: ${destination.type}\n  url: <host>/<writeEndpoint>`);
     }
 
     if (pyroscope.secret) {
@@ -404,21 +435,11 @@ function migratePyroscope(pyroscope) {
 
     const authMode = pyroscope.authMode || "basic";
     if (authMode === "basic") {
-        destination.auth = {
-            type: "basic",
-        };
-        if (pyroscope.basicAuth.username) {
-            destination.auth.username = pyroscope.basicAuth.username;
-        }
-        if (pyroscope.basicAuth.usernameKey) {
-            destination.auth.usernameKey = pyroscope.basicAuth.usernameKey;
-        }
-        if (pyroscope.basicAuth.password) {
-            destination.auth.password = pyroscope.basicAuth.password;
-        }
-        if (pyroscope.basicAuth.passwordKey) {
-            destination.auth.passwordKey = pyroscope.basicAuth.passwordKey;
-        }
+        destination.auth = { type: "basic" };
+        if (pyroscope.basicAuth.username)    { destination.auth.username = pyroscope.basicAuth.username; }
+        if (pyroscope.basicAuth.usernameKey) { destination.auth.usernameKey = pyroscope.basicAuth.usernameKey; }
+        if (pyroscope.basicAuth.password)    { destination.auth.password = pyroscope.basicAuth.password; }
+        if (pyroscope.basicAuth.passwordKey) { destination.auth.passwordKey = pyroscope.basicAuth.passwordKey; }
     }
 
     if (pyroscope.tls) {
@@ -455,7 +476,7 @@ function migratePyroscope(pyroscope) {
         }
     }
 
-    return destination;
+    return {destination, notes};
 }
 
 function migrateClusterMetrics(oldValues) {
@@ -481,16 +502,25 @@ function migrateClusterMetrics(oldValues) {
         results.clusterMetrics["node-exporter"].deploy = results.clusterMetrics["node-exporter"].enabled
         delete results.clusterMetrics["node-exporter"].enabled
     }
+    if (oldValues["prometheus-windows-exporter"]) {
+        results.clusterMetrics["windows-exporter"] = oldValues["prometheus-windows-exporter"];
+        results.clusterMetrics["windows-exporter"].deploy = results.clusterMetrics["windows-exporter"].enabled
+        delete results.clusterMetrics["windows-exporter"].enabled
+    }
     if (oldValues["opencost"]) {
         results.clusterMetrics.opencost = oldValues.opencost;
         if (oldValues.opencost.opencost && oldValues.opencost.opencost.prometheus) {
             results.clusterMetrics.opencost.opencost.prometheus.existingSecretName = "grafana-k8s-monitoring-metricsservice"
         }
     }
+    if (oldValues["kepler"]) {
+        results.clusterMetrics.kepler = oldValues.kepler;
+    }
 
     // Metrics targets
     const targets = {
         kubelet: "kubelet",
+        kubeletResource: "kubeletResource",
         cadvisor: "cadvisor",
         apiserver: "apiServer",
         "kube-state-metrics": "kube-state-metrics",
@@ -504,6 +534,9 @@ function migrateClusterMetrics(oldValues) {
     };
     for (const [oldName, newName] of Object.entries(targets)) {
         if (oldValues.metrics && oldValues.metrics[oldName]) {
+            if (oldValues.metrics[oldName].nodeAddressFormat) {
+                notes.push(`ERROR: metrics.${oldName}.nodeAddressFormat is not used in the new chart.`);
+            }
             results.clusterMetrics[newName] = migrateMetricsTarget(oldValues.metrics[oldName], results.clusterMetrics[newName]);
         }
     }
@@ -525,8 +558,9 @@ function migrateMetricsTarget(target, current) {
 }
 
 function migrateApplicationObservability(oldValues) {
-    if (oldValues.traces && oldValues.trace.enabled) {
-
+    const notes = [];
+    if (!oldValues.traces || oldValues.traces.enabled === false) {
+        return {values: null, notes: []};
     }
     const results = {
         applicationObservability: {
@@ -538,34 +572,57 @@ function migrateApplicationObservability(oldValues) {
 
     if (oldValues.receivers) {
         results.applicationObservability.receivers = {};
-        if (oldValues.receivers.grpc) {
-            results.applicationObservability.receivers.grpc = {
-                enabled: oldValues.receivers.grpc.enabled,
-                port: oldValues.receivers.grpc.port,
-                include_debug_metrics: oldValues.receivers.grpc.disable_debug_metrics
+        if (oldValues.receivers.grpc || oldValues.receivers.http) {
+            results.applicationObservability.receivers.otlp = {
+                includeDebugMetrics: !oldValues.receivers.grpc.disable_debug_metrics || !oldValues.receivers.http.disable_debug_metrics
             }
         }
-        if (oldValues.receivers.http) {
-            results.applicationObservability.receivers.http = {
+
+        if (oldValues.receivers.grpc && oldValues.receivers.grpc.enabled !== false) {
+            results.applicationObservability.receivers.otlp.grpc = {
+                enabled: oldValues.receivers.grpc.enabled,
+                port: oldValues.receivers.grpc.port,
+            }
+        }
+        if (oldValues.receivers.http && oldValues.receivers.http.enabled !== false) {
+            results.applicationObservability.receivers.otlp.http = {
                 enabled: oldValues.receivers.http.enabled,
                 port: oldValues.receivers.http.port,
-                include_debug_metrics: oldValues.receivers.http.disable_debug_metrics
             }
         }
         if (oldValues.receivers.prometheus) {
-            throw new Error("receivers.prometheus has not been migrated to v2")
+            notes.push("ERROR: receivers.prometheus is not supported in the new chart.");
         }
         if (oldValues.receivers.jaeger) {
-            throw new Error("receivers.jaeger has not been migrated to v2")
+            results.applicationObservability.receivers.zipkin = {
+                grpc: {
+                    enabled: oldValues.receivers.jaeger.grpc.enabled,
+                    port: oldValues.receivers.jaeger.grpc.port,
+                },
+                thriftBinary: {
+                    enabled: oldValues.receivers.jaeger.thriftBinary.enabled,
+                    port: oldValues.receivers.jaeger.thriftBinary.port,
+                },
+                thriftCompact: {
+                    enabled: oldValues.receivers.jaeger.thriftCompact.enabled,
+                    port: oldValues.receivers.jaeger.thriftCompact.port,
+                },
+                thriftHttp: {
+                    enabled: oldValues.receivers.jaeger.thriftHttp.enabled,
+                    port: oldValues.receivers.jaeger.thriftHttp.port,
+                },
+                includeDebugMetrics: !oldValues.receivers.jaeger.disable_debug_metrics
+            }
         }
         if (oldValues.receivers.zipkin) {
             results.applicationObservability.receivers.zipkin = {
                 enabled: oldValues.receivers.zipkin.enabled,
                 port: oldValues.receivers.zipkin.port,
-                include_debug_metrics: oldValues.receivers.zipkin.disable_debug_metrics
+                includeDebugMetrics: !oldValues.receivers.zipkin.disable_debug_metrics
             }
         }
     }
+    return {values: results, notes};
 }
 
 function migrateAnnotationAutodiscovery(oldValues) {
@@ -623,6 +680,7 @@ function migratePodLogs(oldValues) {
     if (oldValues.logs && (oldValues.logs.pod_logs && oldValues.logs.pod_logs.enabled === false)) {
         return null;
     }
+    const notes = [];
 
     const results = {
         podLogs: {
@@ -638,17 +696,27 @@ function migratePodLogs(oldValues) {
         } else if (oldValues.logs.pod_logs.gatherMethod === "api") {
             results.podLogs.gatherMethod = "kubernetesApi";
         }
+        if (oldValues.logs.pod_logs.volumeGatherSettings) {
+            results.podLogs.volumeGatherSettings = oldValues.logs.pod_logs.volumeGatherSettings;
+        }
         results.podLogs.namespaces = oldValues.logs.pod_logs.namespaces;
         results.podLogs.excludeNamespaces = oldValues.logs.pod_logs.excludeNamespaces;
         results.podLogs.extraDiscoveryRules = oldValues.logs.pod_logs.extraRelabelingRules;
         results.podLogs.extraLogProcessingStages = oldValues.logs.pod_logs.extraStageBlocks;
+        results.podLogs.annotations = oldValues.logs.pod_logs.annotations;
+        results.podLogs.labels = oldValues.logs.pod_logs.labels;
+
+        if (oldValues.logs.pod_logs.structuredMetadata) {
+            notes.push("ERROR: logs.pod_logs.structuredMetadata is not used in the new chart.");
+        }
+        if (oldValues.logs.pod_logs.discovery) {
+            notes.push("ERROR: logs.pod_logs.discovery is not used in the new chart.");
+        }
+        if (oldValues.logs.pod_logs.annotation) {
+            notes.push("ERROR: logs.pod_logs.annotation is not used in the new chart.");
+        }
     }
 
-    // podLogs.discovery
-    // podLogs.annotation
-    // podLogs.labels
-    // podLogs.annotations
-    // podLogs.structuredMetadata
     return results;
 }
 
@@ -733,6 +801,7 @@ module.exports = {
     migrateClusterEvents,
     migratePodLogs,
     migrateAnnotationAutodiscovery,
+    migrateApplicationObservability,
     migrateAutoinstrumentation,
     migratePromOperatorObjects,
 };

@@ -10,9 +10,14 @@
           flex: 1;
           padding: 10px;
       }
-      textarea {
-          width: 100%;
+      .notes {
+          border: 1px solid black;
           height: 80%;
+          width: 100%;
+      }
+      textarea {
+          height: 80%;
+          width: 100%;
       }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -38,6 +43,12 @@
   <div class="column">
     <h2>values.yaml 2.x.x</h2>
     <textarea id="right-textarea"></textarea>
+  </div>
+  <div class="column">
+    <h2>Notes</h2>
+    <div class="notes">
+      <ul id="notesList" ></ul>
+    </div>
   </div>
 </div>
 

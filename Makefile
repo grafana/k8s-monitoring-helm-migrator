@@ -13,4 +13,4 @@ copyOriginals:
 
 build: $(V2_VALUES)
 clean:
-	rm $(V2_VALUES)
+	rm -f $(V2_VALUES)

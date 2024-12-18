@@ -18,6 +18,7 @@ destinations:
 clusterMetrics:
   enabled: true
   windows-exporter:
+    deploy: true
     enabled: true
 alloy-metrics:
   enabled: true

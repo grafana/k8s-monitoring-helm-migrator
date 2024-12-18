@@ -1,1 +1,42 @@
-externalServices.prometheus.queryEndpoint is not used in the new chart.
+cluster:
+  name: otel-metrics-service-test
+destinations:
+  - name: metricsService
+    type: otlp
+    protocol: http
+    metrics:
+      enabled: true
+    traces:
+      enabled: false
+    url: prometheus.example.com:443/api/v1/otlp
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+    tls: {}
+  - name: logsService
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+clusterMetrics:
+  enabled: true
+alloy-metrics:
+  enabled: true
+clusterEvents:
+  enabled: true
+alloy-singleton:
+  enabled: true
+podLogs:
+  enabled: true
+alloy-logs:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+

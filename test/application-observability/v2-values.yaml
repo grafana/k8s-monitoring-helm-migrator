@@ -17,6 +17,12 @@ destinations:
       password: It's a secret to everyone
   - name: tracesService
     type: otlp
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
     url: https://tempo.example.com
     auth:
       type: basic
@@ -40,6 +46,11 @@ alloy-singleton:
 podLogs:
   enabled: true
 alloy-logs:
+  enabled: true
+applicationObservability:
+  enabled: true
+  receivers: {}
+alloy-receiver:
   enabled: true
 annotationAutodiscovery:
   enabled: true
