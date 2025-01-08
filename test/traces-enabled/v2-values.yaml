@@ -60,4 +60,19 @@ prometheusOperatorObjects:
   enabled: true
   crds:
     deploy: true
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+            - alloy-receiver
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
 

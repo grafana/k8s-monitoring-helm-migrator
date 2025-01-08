@@ -510,6 +510,7 @@ function migrateClusterMetrics(oldValues) {
     if (oldValues["opencost"]) {
         results.clusterMetrics.opencost = oldValues.opencost;
         if (oldValues.opencost.opencost && oldValues.opencost.opencost.prometheus) {
+            results.clusterMetrics.opencost.metricsSource = "metricsService";
             results.clusterMetrics.opencost.opencost.prometheus.existingSecretName = "grafana-k8s-monitoring-metricsservice"
         }
     }
@@ -651,7 +652,6 @@ function migrateAnnotationAutodiscovery(oldValues) {
 }
 
 function migrateAutoinstrumentation(oldValues) {
-
     if (!oldValues.beyla || oldValues.beyla.enabled === false) {
         return null;
     }
@@ -793,6 +793,61 @@ function migratePromOperatorObjectTarget(object) {
     };
 }
 
+function migrateAlloyIntegration(oldValues) {
+    if (oldValues.metrics && (oldValues.metrics.enabled === false || (oldValues.metrics.alloy && oldValues.metrics.alloy.enabled === false))) {
+        return {values: {}, notes: []};
+    }
+    const notes = [];
+    const values = {
+        integrations: {
+            alloy: {
+                instances: [{
+                    name: "alloy",
+                    labelSelectors: {
+                        "app.kubernetes.io/name": []  // Will be appended to later
+                    },
+                    metrics: {
+                        tuning: {
+                            useDefaultAllowList: false,
+                            includeMetrics: ["alloy_build_info"]
+                        }
+                    }
+                }]
+            }
+        },
+        "alloy-metrics": oldValues.alloy || {}
+    }
+    values["alloy-metrics"].enabled = true
+
+    if (oldValues.metrics && oldValues.metrics.alloy) {
+        if (oldValues.metrics.alloy.scrapeInterval) {
+            values.integrations.alloy.instances[0].metrics.scrapeInterval = oldValues.metrics.alloy.scrapeInterval
+        }
+        if (oldValues.metrics.alloy.maxCacheSize) {
+            values.integrations.alloy.instances[0].maxCacheSize = oldValues.metrics.alloy.maxCacheSize
+        }
+        if (oldValues.metrics.alloy.extraRelabelingRules) {
+            notes.push("metrics.alloy.extraRelabelingRules is not yet in the v2 alloy integration.");
+        }
+        if (oldValues.metrics.alloy.extraMetricRelabelingRules) {
+            notes.push("metrics.alloy.extraMetricRelabelingRules is not yet in the v2 alloy integration.");
+        }
+
+        if (oldValues.metrics.alloy.metricsTuning) {
+            if (oldValues.metrics.alloy.metricsTuning.useIntegrationAllowList === true) {
+                values.integrations.alloy.instances[0].metrics.tuning.useDefaultAllowList = true
+            }
+            if (oldValues.metrics.alloy.metricsTuning.includeMetrics) {
+                values.integrations.alloy.instances[0].metrics.tuning.includeMetrics = oldValues.metrics.alloy.metricsTuning.includeMetrics
+            }
+            if (oldValues.metrics.alloy.metricsTuning.excludeMetrics) {
+                values.integrations.alloy.instances[0].metrics.tuning.excludeMetrics = oldValues.metrics.alloy.metricsTuning.excludeMetrics
+            }
+        }
+    }
+    return { values, notes };
+}
+
 module.exports = {
     migrateCluster,
     migrateGlobals,
@@ -804,4 +859,5 @@ module.exports = {
     migrateApplicationObservability,
     migrateAutoinstrumentation,
     migratePromOperatorObjects,
+    migrateAlloyIntegration,
 };

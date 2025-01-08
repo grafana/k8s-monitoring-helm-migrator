@@ -49,4 +49,16 @@ prometheusOperatorObjects:
         replacement = "$1"
         target_label = "team"
       }
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
 

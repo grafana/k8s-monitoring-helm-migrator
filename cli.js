@@ -9,6 +9,7 @@ const {
   migrateApplicationObservability,
   migrateAutoinstrumentation,
   migratePromOperatorObjects,
+  migrateAlloyIntegration
 } = require('./migrate.js');
 const _ = require('lodash')
 const fs = require('fs');
@@ -44,6 +45,19 @@ try {
   newValues = _.merge(newValues, migrateAnnotationAutodiscovery(oldValues));
   newValues = _.merge(newValues, migrateAutoinstrumentation(oldValues));
   newValues = _.merge(newValues, migratePromOperatorObjects(oldValues));
+  {
+    const results = migrateAlloyIntegration(oldValues);
+    newValues = _.merge(newValues, results.values);
+    notes = notes.concat(results.notes);
+  }
+
+  if (newValues.integrations && newValues.integrations.alloy) {
+    for (const alloy of ["alloy-metrics", "alloy-singleton", "alloy-logs", "alloy-receiver", "alloy-profiles"]) {
+      if (newValues[alloy] && newValues[alloy].enabled === true) {
+        newValues.integrations.alloy.instances[0].labelSelectors["app.kubernetes.io/name"].push(alloy);
+      }
+    }
+  }
 
   console.log(yaml.dump(newValues));
   console.error("Notes: " + JSON.stringify(notes));
