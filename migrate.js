@@ -1,3 +1,5 @@
+const ReleaseName = "grafana-k8s-monitoring";
+
 function migrateCluster(oldValues) {
     const values = {
         cluster: {
@@ -511,7 +513,7 @@ function migrateClusterMetrics(oldValues) {
         results.clusterMetrics.opencost = oldValues.opencost;
         if (oldValues.opencost.opencost && oldValues.opencost.opencost.prometheus) {
             results.clusterMetrics.opencost.metricsSource = "metricsService";
-            results.clusterMetrics.opencost.opencost.prometheus.existingSecretName = "grafana-k8s-monitoring-metricsservice"
+            results.clusterMetrics.opencost.opencost.prometheus.existingSecretName = "metricsservice-" + ReleaseName;
         }
     }
     if (oldValues["kepler"]) {

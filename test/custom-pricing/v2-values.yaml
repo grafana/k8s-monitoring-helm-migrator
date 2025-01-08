@@ -38,7 +38,7 @@ clusterMetrics:
       prometheus:
         external:
           url: https://prometheus.example.com/api/prom
-        existingSecretName: grafana-k8s-monitoring-metricsservice
+        existingSecretName: metricsservice-grafana-k8s-monitoring
     metricsSource: metricsService
 alloy-metrics:
   enabled: true
