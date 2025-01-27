@@ -1,4 +1,5 @@
 const {
+  checkValues,
   migrateCluster,
   migrateGlobals,
   migrateDestinations,
@@ -20,6 +21,13 @@ try {
   const oldValues = yaml.load(fs.readFileSync(file, 'utf8'));
   let newValues = {};
   let notes = [];
+
+  notes = checkValues(oldValues);
+  if (notes) {
+    console.error("This does not appear to be a K8s Monitoring v1 values file:")
+    console.error(notes);
+    return;
+  }
 
   {
     const results = migrateCluster(oldValues);

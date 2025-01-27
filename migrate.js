@@ -1,5 +1,15 @@
 const ReleaseName = "grafana-k8s-monitoring";
 
+function checkValues(oldValues) {
+    if (!oldValues.cluster || !oldValues.cluster.name) {
+        return "cluster.name is missing";
+    }
+
+    if (!oldValues.externalServices) {
+        return "externalServices is missing";
+    }
+}
+
 function migrateCluster(oldValues) {
     const values = {
         cluster: {
@@ -851,6 +861,7 @@ function migrateAlloyIntegration(oldValues) {
 }
 
 module.exports = {
+    checkValues,
     migrateCluster,
     migrateGlobals,
     migrateDestinations,
