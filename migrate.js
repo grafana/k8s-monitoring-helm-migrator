@@ -136,18 +136,18 @@ function migratePrometheus(prometheus) {
     destination.tenantIdKey = prometheus.tenantIdKey;
 
     const authMode = prometheus.authMode || "basic";
-    if (authMode === "basic") {
+    if (authMode === "basic" && prometheus.basicAuth) {
         destination.auth = { type: "basic" };
         if (prometheus.basicAuth.username)      { destination.auth.username = prometheus.basicAuth.username; }
         if (prometheus.basicAuth.usernameKey)   { destination.auth.usernameKey = prometheus.basicAuth.usernameKey; }
         if (prometheus.basicAuth.password)      { destination.auth.password = prometheus.basicAuth.password; }
         if (prometheus.basicAuth.passwordKey)   { destination.auth.passwordKey = prometheus.basicAuth.passwordKey; }
-    } else if (authMode === "bearerToken") {
+    } else if (authMode === "bearerToken" && prometheus.bearerToken) {
         destination.auth = { type: "bearerToken" };
         if (prometheus.bearerToken.token)       { destination.auth.bearerToken = prometheus.bearerToken.token; }
         if (prometheus.bearerToken.tokenKey)    { destination.auth.bearerTokenKey = prometheus.bearerToken.tokenKey; }
         if (prometheus.bearerToken.tokenFile)   { destination.bearerTokenFile = prometheus.bearerToken.tokenFile; }
-    } else if (authMode === "sigv4") {
+    } else if (authMode === "sigv4" && prometheus.sigv4) {
         destination.auth = { type: "sigv4", sigv4: {}};
         destination.auth.sigv4.accessKey = prometheus.sigv4.accessKey;
         destination.auth.sigv4.profile = prometheus.sigv4.profile;
@@ -155,7 +155,7 @@ function migratePrometheus(prometheus) {
         destination.auth.sigv4.roleArn = prometheus.sigv4.roleArn;
         destination.auth.sigv4.secretKey = prometheus.sigv4.secretKey;
         destination.auth.sigv4.secretKeyKey = prometheus.sigv4.secretKeyKey;
-    } else if (authMode === "oauth2") {
+    } else if (authMode === "oauth2" && prometheus.oauth2) {
         if (prometheus.oauth2.clientId)               { destination.auth.oauth2.clientId = prometheus.oauth2.clientId; }
         if (prometheus.oauth2.clientIdKey)            { destination.auth.oauth2.clientIdKey = prometheus.oauth2.clientIdKey; }
         if (prometheus.oauth2.clientSecret)           { destination.auth.oauth2.clientSecret = prometheus.oauth2.clientSecret; }
@@ -290,18 +290,18 @@ function migrateLoki(loki) {
     destination.tenantIdKey = loki.tenantIdKey;
 
     const authMode = loki.authMode || "basic";
-    if (authMode === "basic") {
+    if (authMode === "basic" && loki.basicAuth) {
         destination.auth = { type: "basic" };
         if (loki.basicAuth.username)    { destination.auth.username = loki.basicAuth.username; }
         if (loki.basicAuth.usernameKey) { destination.auth.usernameKey = loki.basicAuth.usernameKey; }
         if (loki.basicAuth.password)    { destination.auth.password = loki.basicAuth.password; }
         if (loki.basicAuth.passwordKey) { destination.auth.passwordKey = loki.basicAuth.passwordKey; }
-    } else if (authMode === "bearerToken") {
+    } else if (authMode === "bearerToken" && loki.bearerToken) {
         destination.auth = { type: "bearerToken" };
         if (loki.bearerToken.token)     { destination.auth.bearerToken = loki.bearerToken.token; }
         if (loki.bearerToken.tokenKey)  { destination.auth.bearerTokenKey = loki.bearerToken.tokenKey; }
         if (loki.bearerToken.tokenFile) { destination.auth.bearerTokenFile = loki.bearerToken.tokenFile; }
-    } else if (authMode === "oauth2") {
+    } else if (authMode === "oauth2" && loki.oauth2) {
         destination.auth = { type: "oauth2" };
         if (loki.oauth2.clientId)               { destination.auth.oauth2.clientId = loki.oauth2.clientId; }
         if (loki.oauth2.clientIdKey)            { destination.auth.oauth2.clientIdKey = loki.oauth2.clientIdKey; }
@@ -378,13 +378,13 @@ function migrateTempo(tempo) {
     destination.tenantIdKey = tempo.tenantIdKey;
 
     const authMode = tempo.authMode || "basic";
-    if (authMode === "basic") {
+    if (authMode === "basic" && tempo.basicAuth) {
         destination.auth = { type: "basic" };
         if (tempo.basicAuth.username)       { destination.auth.username = tempo.basicAuth.username; }
         if (tempo.basicAuth.usernameKey)    { destination.auth.usernameKey = tempo.basicAuth.usernameKey; }
         if (tempo.basicAuth.password)       { destination.auth.password = tempo.basicAuth.password; }
         if (tempo.basicAuth.passwordKey)    { destination.auth.passwordKey = tempo.basicAuth.passwordKey; }
-    } else if (authMode === "bearerToken") {
+    } else if (authMode === "bearerToken" && tempo.bearerToken) {
         destination.auth = { type: "bearerToken" };
         if (tempo.bearerToken.token)        { destination.auth.bearerToken = tempo.bearerToken.token; }
         if (tempo.bearerToken.tokenKey)     { destination.auth.bearerTokenKey = tempo.bearerToken.tokenKey; }
@@ -446,7 +446,7 @@ function migratePyroscope(pyroscope) {
     destination.tenantIdKey = pyroscope.tenantIdKey;
 
     const authMode = pyroscope.authMode || "basic";
-    if (authMode === "basic") {
+    if (authMode === "basic" && pyroscope.basicAuth) {
         destination.auth = { type: "basic" };
         if (pyroscope.basicAuth.username)    { destination.auth.username = pyroscope.basicAuth.username; }
         if (pyroscope.basicAuth.usernameKey) { destination.auth.usernameKey = pyroscope.basicAuth.usernameKey; }
