@@ -1,5 +1,13 @@
 cluster:
   name: private-image-registry-test
+global:
+  image:
+    registry: my.registry.com
+    pullSecrets:
+      - name: my-registry-creds
+  imageRegistry: my.registry.com
+  imagePullSecrets:
+    - name: my-registry-creds
 destinations:
   - name: metricsService
     type: prometheus

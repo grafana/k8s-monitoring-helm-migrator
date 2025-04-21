@@ -25,10 +25,15 @@ function migrateCluster(oldValues) {
 
 function migrateGlobals(oldValues) {
     const newValues = {};
+    if (oldValues.global) {
+        newValues.global = oldValues.global;
+    }
+
     if (oldValues.cluster && oldValues.cluster.platform) {
-        newValues.global = {
-            platform: oldValues.cluster.platform
+        if (!newValues.global) {
+            newValues.global = {};
         }
+        newValues.global.platform = oldValues.cluster.platform;
     }
 
     if (oldValues.metrics) {
