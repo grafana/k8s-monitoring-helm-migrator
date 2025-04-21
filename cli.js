@@ -10,7 +10,8 @@ const {
   migrateApplicationObservability,
   migrateAutoinstrumentation,
   migratePromOperatorObjects,
-  migrateAlloyIntegration
+  migrateAlloyIntegration,
+  migrateCollectors
 } = require('./migrate.js');
 const _ = require('lodash')
 const fs = require('fs');
@@ -57,6 +58,7 @@ try {
       newValues = _.merge(newValues, results.values);
       notes = notes.concat(results.notes);
     }
+    newValues = _.merge(newValues, migrateCollectors(oldValues));
 
     if (newValues.integrations && newValues.integrations.alloy) {
       for (const alloy of ["alloy-metrics", "alloy-singleton", "alloy-logs", "alloy-receiver", "alloy-profiles"]) {

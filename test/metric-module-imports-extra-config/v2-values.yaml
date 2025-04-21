@@ -19,6 +19,22 @@ clusterMetrics:
   enabled: true
 alloy-metrics:
   enabled: true
+  extraConfig: |-
+    import.git "memcached" {
+      repository = "https://github.com/grafana/alloy-modules.git"
+      revision = "main"
+      path = "modules/databases/kv/memcached/metrics.alloy"
+      pull_frequency = "15m"
+    }
+
+    // get the targets
+    memcached.kubernetes "targets" {}
+
+    // scrape the targets
+    memcached.scrape "metrics" {
+      targets = memcached.kubernetes.targets.output
+      forward_to = [prometheus.remote_write.metrics_service.receiver]
+    }
 clusterEvents:
   enabled: true
 alloy-singleton:

@@ -37,6 +37,7 @@ document.getElementById('left-textarea').addEventListener('input', function() {
       newValues = _.merge(newValues, results.values);
       notes = notes.concat(results.notes);
     }
+    newValues = _.merge(newValues, migrateCollectors(oldValues));
 
     if (newValues.integrations && newValues.integrations.alloy) {
       for (const alloy of ["alloy-metrics", "alloy-singleton", "alloy-logs", "alloy-receiver", "alloy-profiles"]) {

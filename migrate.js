@@ -860,6 +860,31 @@ function migrateAlloyIntegration(oldValues) {
     return { values, notes };
 }
 
+function migrateCollectors(oldValues) {
+    const values = {};
+    if (oldValues.extraConfig) {
+        values["alloy-metrics"] = {
+            extraConfig: oldValues.extraConfig
+        }
+    }
+    if (oldValues.logs && oldValues.logs.extraConfig) {
+        values["alloy-logs"] = {
+            extraConfig: oldValues.logs.extraConfig
+        }
+    }
+    if (oldValues.logs && oldValues.cluster_events && oldValues.cluster_events.extraConfig) {
+        values["alloy-singleton"] = {
+            extraConfig: oldValues.cluster_events.extraConfig
+        }
+    }
+    if (oldValues.profiles && oldValues.profiles.extraConfig) {
+        values["alloy-profiles"] = {
+            extraConfig: oldValues.profiles.extraConfig
+        }
+    }
+    return values;
+}
+
 module.exports = {
     checkValues,
     migrateCluster,
@@ -873,4 +898,5 @@ module.exports = {
     migrateAutoinstrumentation,
     migratePromOperatorObjects,
     migrateAlloyIntegration,
+    migrateCollectors,
 };
