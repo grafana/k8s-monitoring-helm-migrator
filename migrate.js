@@ -284,8 +284,8 @@ function migrateLoki(loki) {
 
     destination.extraHeaders = loki.extraHeaders;
     destination.extraHeadersFrom = loki.extraHeadersFrom;
-    destination.extraLabels = loki.extraLabels;
-    destination.extraLabelsFrom = loki.extraLabelsFrom;
+    destination.extraLabels = loki.externalLabels;
+    destination.extraLabelsFrom = loki.externalLabelsFrom;
     destination.tenantId = loki.tenantId;
     destination.tenantIdKey = loki.tenantIdKey;
 
@@ -634,6 +634,11 @@ function migrateApplicationObservability(oldValues) {
                 includeDebugMetrics: !oldValues.receivers.zipkin.disable_debug_metrics
             }
         }
+        if (oldValues.receivers.grafanaCloudMetrics && oldValues.receivers.grafanaCloudMetrics.enabled === true) {
+            results.applicationObservability.connectors = {
+                grafanaCloudMetrics: {enabled: true}
+            };
+        }
     }
     return {values: results, notes};
 }
@@ -650,14 +655,14 @@ function migrateAnnotationAutodiscovery(oldValues) {
     };
     results["alloy-metrics"].enabled = true;
 
-    if (oldValues.metrics && oldValues.metrics.autoDiscovery) {
-        results.annotationAutodiscovery.annotations = oldValues.metrics.autoDiscovery.annotations;
-        results.annotationAutodiscovery.extraDiscoveryRules = oldValues.metrics.autoDiscovery.extraRelabelingRules;
-        results.annotationAutodiscovery.scrapeInterval = oldValues.metrics.autoDiscovery.scrapeInterval;
-        results.annotationAutodiscovery.metricsTuning = oldValues.metrics.autoDiscovery.metricsTuning;
-        results.annotationAutodiscovery.extraMetricProcessingRules = oldValues.metrics.autoDiscovery.extraMetricRelabelingRules;
-        results.annotationAutodiscovery.maxCacheSize = oldValues.metrics.autoDiscovery.maxCacheSize;
-        results.annotationAutodiscovery.bearerToken = oldValues.metrics.autoDiscovery.bearerToken;
+    if (oldValues.metrics && oldValues.metrics.autoDiscover) {
+        results.annotationAutodiscovery.annotations = oldValues.metrics.autoDiscover.annotations;
+        results.annotationAutodiscovery.extraDiscoveryRules = oldValues.metrics.autoDiscover.extraRelabelingRules;
+        results.annotationAutodiscovery.scrapeInterval = oldValues.metrics.autoDiscover.scrapeInterval;
+        results.annotationAutodiscovery.metricsTuning = oldValues.metrics.autoDiscover.metricsTuning;
+        results.annotationAutodiscovery.extraMetricProcessingRules = oldValues.metrics.autoDiscover.extraMetricRelabelingRules;
+        results.annotationAutodiscovery.maxCacheSize = oldValues.metrics.autoDiscover.maxCacheSize;
+        results.annotationAutodiscovery.bearerToken = oldValues.metrics.autoDiscover.bearerToken;
     }
 
     return results;

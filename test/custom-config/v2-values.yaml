@@ -17,6 +17,12 @@ destinations:
   - name: logsService
     type: loki
     url: https://loki.example.com/loki/api/v1/push
+    extraLabels:
+      region: southwest
+      tenant: widgetco
+    extraLabelsFrom:
+      env: remote.kubernetes.configmap.cluster_info.data["env"]
+      region: remote.kubernetes.configmap.cluster_info.data["region"]
     auth:
       type: basic
       username: 12345

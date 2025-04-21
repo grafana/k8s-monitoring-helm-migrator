@@ -50,6 +50,9 @@ alloy-logs:
 applicationObservability:
   enabled: true
   receivers: {}
+  connectors:
+    grafanaCloudMetrics:
+      enabled: true
 alloy-receiver:
   enabled: true
 annotationAutodiscovery:
