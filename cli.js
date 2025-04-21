@@ -70,7 +70,11 @@ try {
       }
     }
 
-    console.log(yaml.dump(newValues));
+    const yamlOptions = {
+      indent: 2,
+      lineWidth: -1,
+    }
+    console.log(yaml.dump(newValues, yamlOptions));
     console.error("Notes: " + JSON.stringify(notes));
   }
 } catch (e) {

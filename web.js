@@ -49,7 +49,11 @@ document.getElementById('left-textarea').addEventListener('input', function() {
     }
   }
 
-  document.getElementById('right-textarea').value = jsyaml.dump(newValues);
+  const yamlOptions = {
+    indent: 2,
+    lineWidth: -1,
+  }
+  document.getElementById('right-textarea').value = jsyaml.dump(newValues, yamlOptions);
   if (notes.length > 0) {
     document.getElementById('notesList').innerHTML = notes.map(note => `<li>${note}</li>`).join('');
   } else {
