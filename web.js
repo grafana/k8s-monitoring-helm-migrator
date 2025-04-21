@@ -32,6 +32,7 @@ document.getElementById('left-textarea').addEventListener('input', function() {
     newValues = _.merge(newValues, migrateAnnotationAutodiscovery(oldValues));
     newValues = _.merge(newValues, migrateAutoinstrumentation(oldValues));
     newValues = _.merge(newValues, migratePromOperatorObjects(oldValues));
+    newValues = _.merge(newValues, migrateProfiles(oldValues));
     {
       const results = migrateAlloyIntegration(oldValues);
       newValues = _.merge(newValues, results.values);

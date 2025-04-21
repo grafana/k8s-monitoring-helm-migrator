@@ -40,6 +40,10 @@ prometheusOperatorObjects:
   enabled: true
   crds:
     deploy: true
+profiles:
+  enabled: true
+alloy-profiles:
+  enabled: true
 integrations:
   alloy:
     instances:
@@ -49,6 +53,7 @@ integrations:
             - alloy-metrics
             - alloy-singleton
             - alloy-logs
+            - alloy-profiles
         metrics:
           tuning:
             useDefaultAllowList: false

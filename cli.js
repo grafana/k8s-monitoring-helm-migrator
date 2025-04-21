@@ -10,6 +10,7 @@ const {
   migrateApplicationObservability,
   migrateAutoinstrumentation,
   migratePromOperatorObjects,
+  migrateProfiles,
   migrateAlloyIntegration,
   migrateCollectors
 } = require('./migrate.js');
@@ -53,6 +54,7 @@ try {
     newValues = _.merge(newValues, migrateAnnotationAutodiscovery(oldValues));
     newValues = _.merge(newValues, migrateAutoinstrumentation(oldValues));
     newValues = _.merge(newValues, migratePromOperatorObjects(oldValues));
+    newValues = _.merge(newValues, migrateProfiles(oldValues));
     {
       const results = migrateAlloyIntegration(oldValues);
       newValues = _.merge(newValues, results.values);

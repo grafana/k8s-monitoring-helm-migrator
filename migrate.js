@@ -805,6 +805,38 @@ function migratePromOperatorObjectTarget(object) {
     };
 }
 
+function migrateProfiles(oldValues) {
+    if (!oldValues.profiles || oldValues.profiles.enabled === false) {
+        return {};
+    }
+
+    const values = {
+        profiles: {
+            enabled: true,
+        },
+        "alloy-profiles": oldValues["alloy-profiles"] || {}
+    };
+    values["alloy-profiles"].enabled = true;
+
+    values.profiles.ebpf = oldValues.profiles.ebpf;
+    if (values.profiles.ebpf && values.profiles.ebpf.extraRelabelingRules) {
+        values.profiles.ebpf.extraDiscoveryRules = values.profiles.ebpf.extraRelabelingRules;
+        delete values.profiles.ebpf.extraRelabelingRules;
+    }
+    values.profiles.java = oldValues.profiles.java;
+    if (values.profiles.java && values.profiles.java.extraRelabelingRules) {
+        values.profiles.java.extraDiscoveryRules = values.profiles.java.extraRelabelingRules;
+        delete values.profiles.java.extraRelabelingRules;
+    }
+    values.profiles.pprof = oldValues.profiles.pprof;
+    if (values.profiles.pprof && values.profiles.pprof.extraRelabelingRules) {
+        values.profiles.pprof.extraDiscoveryRules = values.profiles.pprof.extraRelabelingRules;
+        delete values.profiles.pprof.extraRelabelingRules;
+    }
+
+    return values;
+}
+
 function migrateAlloyIntegration(oldValues) {
     if (oldValues.metrics && (oldValues.metrics.enabled === false || (oldValues.metrics.alloy && oldValues.metrics.alloy.enabled === false))) {
         return {values: {}, notes: []};
@@ -897,6 +929,7 @@ module.exports = {
     migrateApplicationObservability,
     migrateAutoinstrumentation,
     migratePromOperatorObjects,
+    migrateProfiles,
     migrateAlloyIntegration,
     migrateCollectors,
 };

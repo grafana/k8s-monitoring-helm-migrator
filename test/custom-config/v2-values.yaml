@@ -112,6 +112,15 @@ prometheusOperatorObjects:
   enabled: true
   crds:
     deploy: true
+profiles:
+  enabled: true
+alloy-profiles:
+  enabled: true
+  extraConfig: |-
+    remote.kubernetes.configmap "cluster_info" {
+      name = "cluster_info"
+      namespace = {{ .Release.Namespace | quote }}
+    }
 integrations:
   alloy:
     instances:
@@ -121,15 +130,10 @@ integrations:
             - alloy-metrics
             - alloy-singleton
             - alloy-logs
+            - alloy-profiles
         metrics:
           tuning:
             useDefaultAllowList: false
             includeMetrics:
               - alloy_build_info
-alloy-profiles:
-  extraConfig: |-
-    remote.kubernetes.configmap "cluster_info" {
-      name = "cluster_info"
-      namespace = {{ .Release.Namespace | quote }}
-    }
 
