@@ -1,5 +1,13 @@
 document.getElementById('left-textarea').addEventListener('input', function() {
-  const oldValues = jsyaml.load(this.value);
+  
+  let oldValues = {};
+  try {
+    oldValues = jsyaml.load(this.value);
+  } catch (error) {
+    document.getElementById('notesList').innerHTML = `<li class="error">Error parsing YAML: ${error.message}</li>`;
+    return;
+  }
+  
   let newValues = {};
   let notes = [];
 
