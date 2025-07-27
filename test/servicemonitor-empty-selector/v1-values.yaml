@@ -1,0 +1,23 @@
+---
+cluster:
+  name: servicemonitor-empty-selector-test
+
+externalServices:
+  prometheus:
+    host: https://prometheus.example.com
+    basicAuth:
+      username: "12345"
+      password: "secret"
+
+metrics:
+  enabled: true
+  serviceMonitors:
+    enabled: true
+    selector: 'match_labels = {}'
+
+logs:
+  enabled: false
+  pod_logs:
+    enabled: false
+  cluster_events:
+    enabled: false

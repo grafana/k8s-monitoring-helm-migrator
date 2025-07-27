@@ -803,16 +803,61 @@ function migratePromOperatorObjects(oldValues) {
     return results;
 }
 
+// Parse v1 selector format and convert to v2 labelSelectors
+function parseV1Selector(selector) {
+    if (!selector || typeof selector !== 'string') {
+        return null;
+    }
+    
+    // Handle the format: match_labels = {key = "value", key2 = "value2"} or match_labels = {}
+    const matchLabelsMatch = selector.match(/match_labels\s*=\s*\{([^}]*)\}/);
+    if (!matchLabelsMatch) {
+        return null;
+    }
+    
+    const labelsString = matchLabelsMatch[1].trim();
+    
+    // Handle empty selector case: match_labels = {}
+    if (labelsString === '') {
+        return {};
+    }
+    
+    const labelPairs = labelsString.split(',');
+    const labelSelectors = {};
+    
+    for (const pair of labelPairs) {
+        const match = pair.trim().match(/(\w+)\s*=\s*"([^"]+)"/);
+        if (match) {
+            const [, key, value] = match;
+            labelSelectors[key] = value;
+        }
+    }
+    
+    return labelSelectors;
+}
+
 function migratePromOperatorObjectTarget(object) {
-    return {
+    const result = {
         enabled: object.enabled,
         namespaces: object.namespaces,
-        selector: object.selector,
         scrapeInterval: object.scrapeInterval,
         extraDiscoveryRules: object.extraRelabelingRules,
         extraMetricProcessingRules: object.extraMetricRelabelingRules,
         maxCacheSize: object.maxCacheSize,
     };
+    
+    // Convert v1 selector format to v2 labelSelectors format
+    if (object.selector) {
+        const labelSelectors = parseV1Selector(object.selector);
+        if (labelSelectors !== null) {
+            result.labelSelectors = labelSelectors;
+        } else {
+            // If we can't parse it, keep the original selector for backwards compatibility
+            result.selector = object.selector;
+        }
+    }
+    
+    return result;
 }
 
 function migrateProfiles(oldValues) {
