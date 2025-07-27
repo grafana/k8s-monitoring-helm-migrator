@@ -13,7 +13,7 @@ metrics:
   enabled: true
   serviceMonitors:
     enabled: true
-    selector: 'match_labels = {monitoring = "grafanacloud", environment = "production"}'
+    selector: 'match_labels = {monitoring = "grafana", environment = "production"}'
 
 logs:
   enabled: false

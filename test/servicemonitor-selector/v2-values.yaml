@@ -21,7 +21,7 @@ prometheusOperatorObjects:
   serviceMonitors:
     enabled: true
     labelSelectors:
-      monitoring: grafanacloud
+      monitoring: grafana
       environment: production
 integrations:
   alloy:
