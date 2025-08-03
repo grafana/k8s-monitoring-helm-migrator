@@ -53,7 +53,11 @@ try {
     }
     newValues = _.merge(newValues, migrateAnnotationAutodiscovery(oldValues));
     newValues = _.merge(newValues, migrateAutoinstrumentation(oldValues));
-    newValues = _.merge(newValues, migratePromOperatorObjects(oldValues));
+    {
+      const results = migratePromOperatorObjects(oldValues);
+      newValues = _.merge(newValues, results.values);
+      notes = notes.concat(results.notes);
+    }
     newValues = _.merge(newValues, migrateProfiles(oldValues));
     {
       const results = migrateAlloyIntegration(oldValues);
