@@ -30,22 +30,23 @@
 <body>
 <h1>K8s Monitoring Helm Chart migration utility</h1>
 <p>
-  This utility can be used to migrate values files from v1 to v2. It's meant to be a best-effort migration utility and
-  might not result in an optimal solution.
+  This utility can be used to migrate values files from v1.x to v2.0 and v3.x. It's meant to be a best-effort migration
+  utility and might not result in an optimal solution, please inspect the output values file and adjust as
+  necessary.
   <br />
   <br />
   For more details about migration, see <a href="https://github.com/grafana/k8s-monitoring-helm/blob/main/charts/k8s-monitoring/docs/Migration.md">the migration guide</a>.
   <br />
   <br />
-  This utility will attempt to use the same default values in v1, even though they're not the same defaults in v2.
+  This utility will attempt to use the same default values in v1, even though they're not the same defaults in v2 or v3.
 </p>
 <div class="container">
   <div class="column">
-    <h2>values.yaml <= 1.x.x</h2>
+    <h2>values.yaml (v1)</h2>
     <textarea id="left-textarea"></textarea>
   </div>
   <div class="column">
-    <h2>values.yaml 2.x.x</h2>
+    <h2>values.yaml (v2/v3)</h2>
     <textarea id="right-textarea"></textarea>
   </div>
   <div class="column">
