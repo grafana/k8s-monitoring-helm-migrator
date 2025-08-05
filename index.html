@@ -23,6 +23,13 @@
           color: red;
           font-weight: bold;
       }
+      #file-upload {
+          padding: 5px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          width: 100%;
+          box-sizing: border-box;
+      }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
@@ -40,6 +47,14 @@
   <br />
   This utility will attempt to use the same default values in v1, even though they're not the same defaults in v2 or v3.
 </p>
+<div class="container" style="height: auto; margin-bottom: 10px;">
+  <div class="column">
+    <label for="file-upload" style="display: block; margin-bottom: 5px; font-weight: bold;">Upload v1 values.yaml file:</label>
+    <input type="file" id="file-upload" accept=".yaml,.yml" />
+  </div>
+  <div class="column"></div>
+  <div class="column"></div>
+</div>
 <div class="container">
   <div class="column">
     <h2>values.yaml (v1)</h2>

@@ -1,8 +1,9 @@
-document.getElementById('left-textarea').addEventListener('input', function() {
+function processMigration() {
+  const leftTextarea = document.getElementById('left-textarea');
   
   let oldValues = {};
   try {
-    oldValues = jsyaml.load(this.value);
+    oldValues = jsyaml.load(leftTextarea.value);
   } catch (error) {
     document.getElementById('notesList').innerHTML = `<li class="error">Error parsing YAML: ${error.message}</li>`;
     return;
@@ -71,4 +72,26 @@ document.getElementById('left-textarea').addEventListener('input', function() {
   } else {
     document.getElementById('notesList').innerHTML = '';
   }
+}
+
+document.getElementById('file-upload').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  if (file) {
+    // Validate file type
+    const fileName = file.name.toLowerCase();
+    if (!fileName.endsWith('.yaml') && !fileName.endsWith('.yml')) {
+      document.getElementById('notesList').innerHTML = '<li class="error">Please select a YAML file (.yaml or .yml)</li>';
+      event.target.value = ''; // Clear the file input
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('left-textarea').value = e.target.result;
+      processMigration();
+    };
+    reader.readAsText(file);
+  }
 });
+
+document.getElementById('left-textarea').addEventListener('input', processMigration);
