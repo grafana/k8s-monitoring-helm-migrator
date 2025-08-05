@@ -781,6 +781,7 @@ function migratePromOperatorObjects(oldValues) {
         "alloy-metrics": oldValues.alloy || {}
     };
     results["alloy-metrics"].enabled = true;
+    const notes = [];
 
     if (!oldValues["prometheus-operator-crds"] || oldValues["prometheus-operator-crds"].enabled !== false) {
         results.prometheusOperatorObjects.crds = {
@@ -790,29 +791,82 @@ function migratePromOperatorObjects(oldValues) {
 
     if (oldValues.metrics) {
         if (oldValues.metrics.podMonitors) {
-            results.prometheusOperatorObjects.podMonitors = migratePromOperatorObjectTarget(oldValues.metrics.podMonitors)
+            const podMonitorsResult = migratePromOperatorObjectTarget(oldValues.metrics.podMonitors, "podMonitors");
+            results.prometheusOperatorObjects.podMonitors = podMonitorsResult.result;
+            notes.push(...podMonitorsResult.notes);
         }
         if (oldValues.metrics.probes) {
-            results.prometheusOperatorObjects.probes = migratePromOperatorObjectTarget(oldValues.metrics.probes);
+            const probesResult = migratePromOperatorObjectTarget(oldValues.metrics.probes, "probes");
+            results.prometheusOperatorObjects.probes = probesResult.result;
+            notes.push(...probesResult.notes);
         }
         if (oldValues.metrics.serviceMonitors) {
-            results.prometheusOperatorObjects.serviceMonitors = migratePromOperatorObjectTarget(oldValues.metrics.serviceMonitors);
+            const serviceMonitorsResult = migratePromOperatorObjectTarget(oldValues.metrics.serviceMonitors, "serviceMonitors");
+            results.prometheusOperatorObjects.serviceMonitors = serviceMonitorsResult.result;
+            notes.push(...serviceMonitorsResult.notes);
         }
     }
 
-    return results;
+    return {values: results, notes};
 }
 
-function migratePromOperatorObjectTarget(object) {
-    return {
+// Parse v1 selector format and convert to v2 labelSelectors
+function parseV1Selector(selector) {
+    if (!selector || typeof selector !== 'string') {
+        return null;
+    }
+    
+    // Handle the format: match_labels = {key = "value", key2 = "value2"} or match_labels = {}
+    const matchLabelsMatch = selector.match(/match_labels\s*=\s*\{([^}]*)\}/);
+    if (!matchLabelsMatch) {
+        return null;
+    }
+    
+    const labelsString = matchLabelsMatch[1].trim();
+    
+    // Handle empty selector case: match_labels = {}
+    if (labelsString === '') {
+        return {};
+    }
+    
+    const labelPairs = labelsString.split(',');
+    const labelSelectors = {};
+    
+    for (const pair of labelPairs) {
+        const match = pair.trim().match(/(\w+)\s*=\s*"([^"]+)"/);
+        if (match) {
+            const [, key, value] = match;
+            labelSelectors[key] = value;
+        }
+    }
+    
+    return labelSelectors;
+}
+
+function migratePromOperatorObjectTarget(object, objectType) {
+    const result = {
         enabled: object.enabled,
         namespaces: object.namespaces,
-        selector: object.selector,
         scrapeInterval: object.scrapeInterval,
         extraDiscoveryRules: object.extraRelabelingRules,
         extraMetricProcessingRules: object.extraMetricRelabelingRules,
         maxCacheSize: object.maxCacheSize,
     };
+    const notes = [];
+    
+    // Convert v1 selector format to v2 labelSelectors format
+    if (object.selector) {
+        const labelSelectors = parseV1Selector(object.selector);
+        if (labelSelectors !== null) {
+            result.labelSelectors = labelSelectors;
+        } else {
+            notes.push(`ERROR: Cannot parse selector "${object.selector}" for ${objectType}. Manual migration required. Please convert to labelSelectors format in the v2 values file.`);
+            // Keep the original selector for reference
+            result.selector = object.selector;
+        }
+    }
+    
+    return { result, notes };
 }
 
 function migrateProfiles(oldValues) {

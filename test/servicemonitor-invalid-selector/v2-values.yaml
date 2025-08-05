@@ -1,0 +1,36 @@
+cluster:
+  name: servicemonitor-invalid-selector-test
+destinations:
+  - name: metricsService
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: basic
+      username: '12345'
+      password: secret
+clusterMetrics:
+  enabled: true
+alloy-metrics:
+  enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  serviceMonitors:
+    enabled: true
+    selector: invalid_selector_format_here
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
+
