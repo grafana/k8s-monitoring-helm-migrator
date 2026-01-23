@@ -1,0 +1,40 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - uses: azure/setup-helm@v4
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Generate v2 values files
+        run: |
+          make build
+          git diff --exit-code -- test
+
+      - name: Run Helm template tests
+        run: |
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+          make test-v2 test-v3
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Ensure Web UI has no console errors
+        run: make test-web
