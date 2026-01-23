@@ -24,7 +24,7 @@ jobs:
 
       - name: Generate v2 values files
         run: |
-          make build
+          make clean build
           git diff --exit-code -- test
 
       - name: Run Helm template tests

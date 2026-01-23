@@ -1,13 +1,16 @@
-V1_VALUES_ORIGINAL = $(shell find ../k8s-monitoring-helm/charts/k8s-monitoring-v1/docs/examples -name values.yaml)
-V1_VALUES = $(shell find ../k8s-monitoring-helm/charts/k8s-monitoring-v1/docs/examples -name values.yaml | sed 's|../k8s-monitoring-helm/charts/k8s-monitoring-v1/docs/examples/|test/|; s|/values.yaml$$|/v1-values.yaml|')
+V1_VALUES_SOURCE = ../k8s-monitoring-helm/charts/k8s-monitoring-v1/docs/examples
+V1_VALUES_ORIGINAL := $(shell find $(V1_VALUES_SOURCE) -name values.yaml)
+V1_VALUES_DESIRED := $(V1_VALUES_ORIGINAL:../k8s-monitoring-helm/charts/k8s-monitoring-v1/docs/examples/%/values.yaml=test/%/v1-values.yaml)
+V1_VALUES = $(shell find test -name v1-values.yaml)
 V2_VALUES = $(V1_VALUES:v1-values.yaml=v2-values.yaml)
 
-test/%/v1-values.yaml: ../k8s-monitoring-helm/charts/k8s-monitoring-v1/docs/examples/%/values.yaml
+.SECONDEXPANSION:
+test/%/v1-values.yaml: $$(wildcard $(V1_VALUES_SOURCE)/%/values.yaml)
 	mkdir -p test/$$(basename $$(dirname $<))
 	cp $< $@
 
 .PHONY: copyOriginals
-copyOriginals: $(V1_VALUES)
+copyOriginals: clean-v1-values $(V1_VALUES_DESIRED)
 
 %/v2-values.yaml: %/v1-values.yaml cli.js migrate.js
 	node cli.js $< > $@
@@ -17,7 +20,10 @@ build: $(V2_VALUES)
 
 .PHONY: clean
 clean:
-	rm -f $(V2_VALUES) $(V1_VALUES)
+	rm -f $(V2_VALUES)
+
+clean-v1-values:
+	rm -f $(V1_VALUES_DESIRED)
 
 .PHONY: test-v1
 test-v1: $(V1_VALUES)
