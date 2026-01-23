@@ -1,0 +1,47 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: 'false'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238  # v6.2.0
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Set up Helm
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4  # v4.3.1
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Generate v2 values files
+        run: |
+          make clean build
+          git diff --exit-code -- test
+
+      - name: Run Helm template tests
+        run: |
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+          make test-v2 test-v3
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Ensure Web UI has no console errors
+        run: make test-web
