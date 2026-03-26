@@ -1,0 +1,49 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    metricsTuning:
+      useDefaultAllowList: false
+  kubelet:
+    metricsTuning:
+      useDefaultAllowList: false
+      includeMetrics:
+        - kubelet_node_name
+        - kubernetes_build_info
+  cadvisor:
+    metricsTuning:
+      useDefaultAllowList: true
+      includeMetrics:
+        - container_memory_cache
+        - container_memory_rss
+        - container_memory_swap
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+  node-exporter:
+    deploy: true
+hostMetrics:
+  linuxHosts:
+    enabled: true
+    metricsTuning:
+      useIntegrationAllowList: true
+  enabled: true
+  collector: alloy-metrics
+cluster:
+  name: metrics-tuning-example-cluster
+annotationAutodiscovery:
+  enabled: true
+  metricsTuning:
+    excludeMetrics:
+      - go_*
+  collector: alloy-metrics
+

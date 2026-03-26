@@ -1,0 +1,15 @@
+destinations:
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+collectors:
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: pod-logs-cluster
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+

@@ -1,0 +1,32 @@
+destinations:
+  prometheus-kubernetes:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+    includeDestinations:
+      - prometheus-kubernetes
+    extraConfig: |
+      discovery.kubernetes "animal_service" {
+        role = "service"
+        namespaces {
+          names = ["zoo"]
+        }
+        selectors {
+          role = "service"
+          label = "app.kubernetes.io/name=animal-service"
+        }
+      }
+      prometheus.scrape "animal_service" {
+        job_name   = "animal_service"
+        targets    = discovery.kubernetes.animal_service.targets
+        forward_to = [prometheus.remote_write.prometheus_kubernetes.receiver]
+      }
+cluster:
+  name: extra-configuration-cluster
+selfReporting:
+  enabled: false
+

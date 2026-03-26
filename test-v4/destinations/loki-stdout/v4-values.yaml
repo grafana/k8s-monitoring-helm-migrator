@@ -1,0 +1,28 @@
+destinations:
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+    tenantId: '1'
+    auth:
+      type: basic
+      username: loki
+      password: lokipassword
+  lokiStdout:
+    type: loki-stdout
+    logProcessingRules: |
+      rule {
+        source_labels = ["namespace"]
+        regex = "production"
+        action = "keep"
+      }
+collectors:
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: loki-stdout-destination-test
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+

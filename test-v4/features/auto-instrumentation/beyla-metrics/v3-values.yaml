@@ -1,0 +1,15 @@
+---
+cluster:
+  name: auto-instrumentation-cluster
+
+destinations:
+  - name: prometheus
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+
+autoInstrumentation:
+  enabled: true
+  spanMetricsOnly: true
+
+alloy-metrics:
+  enabled: true

@@ -1,0 +1,64 @@
+destinations:
+  metric-store:
+    type: prometheus
+    url: http://prometheus-server.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+    tenantId: 1
+    auth:
+      type: basic
+      username: loki
+      password: lokipassword
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+clusterMetrics:
+  enabled: true
+  kubelet:
+    enabled: false
+  kubeletResource:
+    enabled: false
+  kubeletProbes:
+    enabled: false
+  cadvisor:
+    enabled: false
+  kube-state-metrics:
+    namespaces: default
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+    rbac:
+      useClusterRole: false
+cluster:
+  name: no-cluster-roles
+clusterEvents:
+  enabled: true
+  namespaces:
+    - default
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  namespaces:
+    - default
+  collector: alloy-logs
+collectorCommon:
+  alloy:
+    rbac:
+      namespaces:
+        - default
+alloy-operator:
+  ownNamespaceOnly: true
+  rbac:
+    createClusterRoles: false
+

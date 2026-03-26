@@ -1,0 +1,75 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+  tempo:
+    type: otlp
+    url: http://tempo.tempo.svc
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-receiver:
+    presets:
+      - deployment
+    alloy:
+      extraPorts:
+        - name: otlp-grpc
+          port: 4317
+          targetPort: 4317
+          protocol: TCP
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    metricsTuning:
+      includeMetrics:
+        - kube_pod_annotations
+        - kube_pod_labels
+    metricLabelsAllowlist:
+      - pods=[*]
+    metricAnnotationsAllowList:
+      - pods=[*]
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: pod-labels-and-annotations
+podLogsViaLoki:
+  enabled: true
+  labels:
+    name: example.com/name
+  annotations:
+    environment: example.com/environment
+  labelsToKeep:
+    - name
+    - environment
+  collector: alloy-logs
+applicationObservability:
+  enabled: true
+  processors:
+    k8sattributes:
+      labels:
+        - from: pod
+          key_regex: kubernetes.io/(.*)
+          tag_name: $1
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+  collector: alloy-receiver
+

@@ -1,0 +1,20 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+cluster:
+  name: annotation-autodiscovery-prom-annotations-cluster
+annotationAutodiscovery:
+  enabled: true
+  annotations:
+    scrape: prometheus.io/scrape
+    metricsPath: prometheus.io/path
+    metricsPortNumber: prometheus.io/port
+    metricsScheme: prometheus.io/scheme
+  collector: alloy-metrics
+

@@ -1,0 +1,24 @@
+destinations:
+  otlp-gateway:
+    type: otlp
+    url: http://otlp-gateway.example.com
+    metrics:
+      enabled: true
+    logs:
+      enabled: true
+    traces:
+      enabled: true
+collectors:
+  alloy-receiver:
+    presets:
+      - deployment
+cluster:
+  name: applications-cluster
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      http:
+        enabled: true
+  collector: alloy-receiver
+

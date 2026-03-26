@@ -1,0 +1,16 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+cluster:
+  name: auto-instrumentation-cluster
+autoInstrumentation:
+  enabled: true
+  spanMetricsOnly: true
+  collector: alloy-metrics
+

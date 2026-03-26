@@ -1,0 +1,72 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+  tempo:
+    type: otlp
+    url: http://tempo.tempo.svc
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+clusterMetrics:
+  enabled: true
+  nodeLabels:
+    nodePool: true
+    region: true
+    availabilityZone: true
+    nodeRole: true
+    os: true
+    architecture: true
+    instanceType: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: pod-labels-and-annotations
+podLogsViaLoki:
+  enabled: true
+  nodeLabels:
+    nodepool: true
+    region: true
+    availability_zone: true
+    node_role: true
+    os: true
+    architecture: true
+    instance_type: true
+  structuredMetadata:
+    node_pool: nodepool
+    region: null
+    availability_zone: null
+    node_role: null
+    node_os: os
+    node_arch: architecture
+    node_type: instance_type
+  collector: alloy-logs
+annotationAutodiscovery:
+  nodeLabels:
+    nodePool: true
+    region: true
+    availabilityZone: true
+    nodeRole: true
+    os: true
+    architecture: true
+    instanceType: true
+  enabled: true
+  collector: alloy-metrics
+

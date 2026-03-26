@@ -1,0 +1,125 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+    alloy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    configReloader:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 50Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+  node-exporter:
+    deploy: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 50Mi
+      requests:
+        cpu: 100m
+        memory: 30Mi
+  windows-exporter:
+    deploy: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 50Mi
+      requests:
+        cpu: 100m
+        memory: 30Mi
+  opencost:
+    deploy: true
+    metricsSource: prometheus
+    opencost:
+      prometheus:
+        external:
+          url: http://prometheus.prometheus.svc:9090/api/v1/query
+      exporter:
+        defaultClusterId: resources-example-cluster
+  kepler:
+    deploy: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+costMetrics:
+  enabled: true
+  exporter:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 55Mi
+      limits:
+        cpu: 100m
+        memory: 1Gi
+  collector: alloy-metrics
+hostMetrics:
+  linuxHosts:
+    enabled: true
+  windowsHosts:
+    enabled: true
+  energyMetrics:
+    enabled: true
+  enabled: true
+  collector: alloy-metrics
+cluster:
+  name: resources-example-cluster
+autoInstrumentation:
+  enabled: true
+  spanMetricsOnly: true
+  beyla:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  collector: alloy-metrics
+alloy-operator:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 128Mi
+  waitForAlloyRemoval:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 128Mi
+

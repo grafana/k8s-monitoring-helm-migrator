@@ -1,0 +1,15 @@
+destinations:
+  pyroscope:
+    type: pyroscope
+    url: http://pyroscope.pyroscope.svc:4040
+collectors:
+  alloy-profiles:
+    presets:
+      - privileged
+      - daemonset
+cluster:
+  name: profiling-cluster
+profiling:
+  enabled: true
+  collector: alloy-profiles
+

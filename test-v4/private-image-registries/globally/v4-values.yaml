@@ -1,0 +1,88 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+  tempo:
+    type: otlp
+    url: http://tempo.tempo.svc:3200/api/v1/metrics
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+    processors:
+      tailSampling:
+        enabled: true
+        policies:
+          - name: always_sample-policy
+            type: always_sample
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-receiver:
+    presets:
+      - deployment
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kepler:
+    deploy: true
+    image:
+      repository: my.registry.com/sustainable_computing_io/kepler
+    imagePullSecrets:
+      - name: my-registry-creds
+  opencost:
+    deploy: true
+    imagePullSecrets:
+      - name: my-registry-creds
+    opencost:
+      exporter:
+        image:
+          registry: my.registry.com
+        defaultClusterId: global-private-image-registries-example-cluster
+      prometheus:
+        external:
+          url: http://prometheus.prometheus.svc:9090/api/v1/query
+    metricsSource: prometheus
+  kube-state-metrics:
+    deploy: true
+costMetrics:
+  enabled: true
+  collector: alloy-metrics
+hostMetrics:
+  energyMetrics:
+    enabled: true
+  enabled: true
+  collector: alloy-metrics
+cluster:
+  name: global-private-image-registries-example-cluster
+global:
+  image:
+    registry: my.registry.com
+    pullSecrets:
+      - name: my-registry-creds
+  imageRegistry: my.registry.com
+  imagePullSecrets:
+    - name: my-registry-creds
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      http:
+        enabled: true
+  collector: alloy-receiver
+

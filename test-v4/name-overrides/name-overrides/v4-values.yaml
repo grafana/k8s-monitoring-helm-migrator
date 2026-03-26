@@ -1,0 +1,47 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+    nameOverride: metric-collector
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  node-exporter:
+    deploy: true
+    nameOverride: node-metric-source
+  kepler:
+    deploy: true
+    nameOverride: energy-metric-source
+  opencost:
+    deploy: true
+    nameOverride: cost-metric-source
+    metricsSource: prometheus
+    opencost:
+      exporter:
+        defaultClusterId: name-override-test
+      prometheus:
+        external:
+          url: http://prometheus.prometheus.svc:9090/api/v1/query
+  kube-state-metrics:
+    deploy: true
+costMetrics:
+  enabled: true
+  collector: alloy-metrics
+hostMetrics:
+  linuxHosts:
+    enabled: true
+    labelMatchers:
+      app.kubernetes.io/name: node-metric-source
+  energyMetrics:
+    enabled: true
+  enabled: true
+  collector: alloy-metrics
+cluster:
+  name: name-override-test
+

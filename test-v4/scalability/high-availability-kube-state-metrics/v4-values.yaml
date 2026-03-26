@@ -1,0 +1,21 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    discoveryType: service
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+    replicas: 2
+cluster:
+  name: high-availability-kube-state-metrics
+

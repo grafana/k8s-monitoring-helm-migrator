@@ -1,0 +1,19 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+cluster:
+  name: etcd-integration-cluster
+integrations:
+  etcd:
+    instances:
+      - name: etcd
+        labelSelectors:
+          app.kubernetes.io/component: etcd
+  collector: alloy-metrics
+

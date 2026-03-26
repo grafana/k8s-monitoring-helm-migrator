@@ -1,0 +1,31 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: grafana-integration-cluster
+integrations:
+  grafana:
+    instances:
+      - name: grafana
+        labelSelectors:
+          app.kubernetes.io/name: grafana
+        namespaces:
+          - o11y
+  collector: alloy-metrics
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+

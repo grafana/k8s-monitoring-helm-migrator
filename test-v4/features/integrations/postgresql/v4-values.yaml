@@ -1,0 +1,46 @@
+destinations:
+  localPrometheus:
+    type: prometheus
+    url: http://prometheus-server.prometheus.svc:9090/api/v1/write
+  localLoki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+    tenantId: '1'
+    auth:
+      type: basic
+      username: loki
+      password: lokipassword
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: postgresql-integration-test-cluster
+integrations:
+  postgresql:
+    instances:
+      - name: test-database
+        exporter:
+          dataSource:
+            host: test-database-pg-db-primary.postgresql.svc
+            auth:
+              usernameKey: user
+              passwordKey: password
+        secret:
+          create: false
+          name: test-database-pg-db-pguser-test-database-pg-db
+          namespace: postgresql
+        logs:
+          enabled: true
+          labelSelectors:
+            app.kubernetes.io/instance: test-database-pg-db
+  collector: alloy-metrics
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+

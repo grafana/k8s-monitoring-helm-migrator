@@ -1,0 +1,63 @@
+destinations:
+  otlp-gateway:
+    type: otlp
+    url: https://otlp-gateway-my-region.grafana.net/otlp
+    protocol: http
+    auth:
+      type: basic
+      username: my-gateway-username
+      password: my-gateway-password
+    metrics:
+      enabled: true
+    logs:
+      enabled: true
+    traces:
+      enabled: true
+    processors:
+      transform:
+        traces:
+          resource:
+            - set(resource.attributes["quoted"], "quted")
+          resourceFrom:
+            - string.format(`set(attributes["from_env"], %q)`, coalesce(sys.env("MY_ENV"), "undefined"))
+    sendingQueue:
+      enabled: true
+      blockOnOverflow: true
+      storage: otelcol.storage.file.otlp_gateway_queue_storage.handler
+      batch:
+        enabled: true
+        flushTimeout: 1s
+        sizer: items
+        minSize: 100
+        maxSize: 1000
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+    extraConfig: |
+      otelcol.storage.file "otlp_gateway_queue_storage" {
+        create_directory = true
+        directory = "/var/lib/otlp_gateway_queue_storage"
+      }
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+    extraConfig: |
+      otelcol.storage.file "otlp_gateway_queue_storage" {
+        create_directory = true
+        directory = "/var/lib/otlp_gateway_queue_storage"
+      }
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: otlp-gateway-test
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+
