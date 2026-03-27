@@ -327,6 +327,19 @@ function migrateV3toV4(oldValues) {
                     notes.push(`ERROR: podLogs.gatherMethod "${method}" is not recognized. Please migrate podLogs manually.`);
                     newValues["podLogsViaLoki"] = rest;
                 }
+            } else if (key === "profiling") {
+                newValues[key] = { ...value };
+                // In v3, ebpf/java/pprof were all enabled by default.
+                // In v4, they default to false. Enable them if not explicitly configured.
+                if (value.enabled && !value.ebpf) {
+                    newValues[key].ebpf = { enabled: true };
+                }
+                if (value.enabled && !value.java) {
+                    newValues[key].java = { enabled: true };
+                }
+                if (value.enabled && !value.pprof) {
+                    newValues[key].pprof = { enabled: true };
+                }
             } else {
                 newValues[key] = value;
             }
