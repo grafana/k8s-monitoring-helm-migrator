@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 const ALLOY_PRESETS = {
     "alloy-metrics":   ["clustered", "statefulset"],
     "alloy-logs":      ["filesystem-log-reader", "daemonset"],
@@ -295,17 +293,17 @@ function migrateV3toV4(oldValues) {
     // Migrate destinations: list -> map
     {
         const result = migrateDestinationsV3toV4(oldValues);
-        newValues = _.merge(newValues, result.values);
+        Object.assign(newValues, result.values);
         notes = notes.concat(result.notes);
     }
 
     // Migrate alloy-* instances -> collectors map with presets
-    newValues = _.merge(newValues, migrateCollectorsV3toV4(oldValues));
+    Object.assign(newValues, migrateCollectorsV3toV4(oldValues));
 
     // Migrate clusterMetrics split
     {
         const result = migrateClusterMetricsV3toV4(oldValues);
-        newValues = _.merge(newValues, result.values);
+        Object.assign(newValues, result.values);
         notes = notes.concat(result.notes);
     }
 
