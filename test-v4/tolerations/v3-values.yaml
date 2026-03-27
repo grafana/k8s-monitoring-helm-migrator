@@ -1,0 +1,81 @@
+---
+cluster:
+  name: tolerations-example-cluster
+
+destinations:
+  - name: prometheus
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  - name: loki
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+  node-exporter:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+  windows-exporter:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+  opencost:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+
+  kepler:
+    enabled: true
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+
+autoInstrumentation:
+  enabled: true
+  spanMetricsOnly: true
+  beyla:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+
+podLogs:
+  enabled: true
+
+alloy-metrics:
+  enabled: true
+  controller:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+
+alloy-logs:
+  enabled: true
+  controller:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+
+alloy-operator:
+  tolerations:
+    - key: protected-node
+      effect: NoSchedule
+      operator: Exists
+
+  waitForAlloyRemoval:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists

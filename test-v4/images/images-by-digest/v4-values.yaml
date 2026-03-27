@@ -1,0 +1,110 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+  tempo:
+    type: otlp
+    url: http://tempo.tempo.svc:3200/api/v1/metrics
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+    processors:
+      tailSampling:
+        enabled: true
+        policies:
+          - name: always_sample-policy
+            type: always_sample
+        collector:
+          image:
+            digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+          configReloader:
+            image:
+              digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-receiver:
+    presets:
+      - deployment
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+    image:
+      sha: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+  node-exporter:
+    deploy: true
+    image:
+      digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+  windows-exporter:
+    deploy: true
+    image:
+      digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+  opencost:
+    deploy: true
+    imagePullSecrets:
+      - name: my-registry-creds
+    opencost:
+      exporter:
+        image:
+          tag: 1.115.0@sha256:fb6468a1ef45dbd4a9e521122c8d306f882bb33d1657d28d21aeaef79412e9e1
+        defaultClusterId: images-by-digest-example-cluster
+      prometheus:
+        external:
+          url: http://prometheus.prometheus.svc:9090/api/v1/query
+    metricsSource: prometheus
+  kepler:
+    deploy: true
+    image:
+      digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+costMetrics:
+  enabled: true
+  collector: alloy-metrics
+hostMetrics:
+  linuxHosts:
+    enabled: true
+  windowsHosts:
+    enabled: true
+  energyMetrics:
+    enabled: true
+  enabled: true
+  collector: alloy-metrics
+cluster:
+  name: images-by-digest-example-cluster
+autoInstrumentation:
+  enabled: true
+  beyla:
+    image:
+      digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+  collector: alloy-metrics
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      http:
+        enabled: true
+  collector: alloy-receiver
+alloy-operator:
+  image:
+    digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+  waitForAlloyRemoval:
+    image:
+      digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+collectorCommon:
+  alloy:
+    image:
+      digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+    configReloader:
+      image:
+        digest: sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+

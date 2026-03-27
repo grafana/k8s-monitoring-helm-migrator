@@ -588,6 +588,7 @@ function migrateApplicationObservability(oldValues) {
     };
     results["alloy-receiver"].enabled = true;
 
+    let hasEnabledReceiver = false;
     if (oldValues.receivers) {
         results.applicationObservability.receivers = {};
         if (oldValues.receivers.grpc || oldValues.receivers.http) {
@@ -601,12 +602,14 @@ function migrateApplicationObservability(oldValues) {
                 enabled: oldValues.receivers.grpc.enabled,
                 port: oldValues.receivers.grpc.port,
             }
+            hasEnabledReceiver = true;
         }
         if (oldValues.receivers.http && oldValues.receivers.http.enabled !== false) {
             results.applicationObservability.receivers.otlp.http = {
                 enabled: oldValues.receivers.http.enabled,
                 port: oldValues.receivers.http.port,
             }
+            hasEnabledReceiver = true;
         }
         if (oldValues.receivers.prometheus) {
             notes.push("ERROR: receivers.prometheus is not supported in the new chart.");
@@ -631,6 +634,7 @@ function migrateApplicationObservability(oldValues) {
                 },
                 includeDebugMetrics: !oldValues.receivers.jaeger.disable_debug_metrics
             }
+            hasEnabledReceiver = true;
         }
         if (oldValues.receivers.zipkin) {
             results.applicationObservability.receivers.zipkin = {
@@ -638,12 +642,24 @@ function migrateApplicationObservability(oldValues) {
                 port: oldValues.receivers.zipkin.port,
                 includeDebugMetrics: !oldValues.receivers.zipkin.disable_debug_metrics
             }
+            hasEnabledReceiver = true;
         }
         if (oldValues.receivers.grafanaCloudMetrics && oldValues.receivers.grafanaCloudMetrics.enabled === true) {
             results.applicationObservability.connectors = {
                 grafanaCloudMetrics: {enabled: true}
             };
         }
+    }
+
+    // v1 traces.enabled implicitly enables OTLP gRPC; ensure at least one receiver is set
+    if (!hasEnabledReceiver) {
+        if (!results.applicationObservability.receivers) {
+            results.applicationObservability.receivers = {};
+        }
+        if (!results.applicationObservability.receivers.otlp) {
+            results.applicationObservability.receivers.otlp = {};
+        }
+        results.applicationObservability.receivers.otlp.grpc = { enabled: true };
     }
     return {values: results, notes};
 }
@@ -725,6 +741,14 @@ function migratePodLogs(oldValues) {
         results.podLogs.excludeNamespaces = oldValues.logs.pod_logs.excludeNamespaces;
         results.podLogs.extraDiscoveryRules = oldValues.logs.pod_logs.extraRelabelingRules;
         results.podLogs.extraLogProcessingStages = oldValues.logs.pod_logs.extraStageBlocks;
+        if (oldValues.logs.pod_logs.extraStageBlocks && typeof oldValues.logs.pod_logs.extraStageBlocks === 'string'
+            && oldValues.logs.pod_logs.extraStageBlocks.includes('.Values.externalServices')) {
+            notes.push("WARNING: podLogs.extraLogProcessingStages contains Go template references to .Values.externalServices which no longer exists in v2/v3. These references have been commented out. Please update them manually.");
+            results.podLogs.extraLogProcessingStages = results.podLogs.extraLogProcessingStages.replace(
+                /\{\{[^}]*\.Values\.externalServices[^}]*\}\}/g,
+                '"FIXME_UPDATE_THIS_REFERENCE"'
+            );
+        }
         results.podLogs.annotations = oldValues.logs.pod_logs.annotations;
         results.podLogs.labels = oldValues.logs.pod_logs.labels;
 
@@ -765,13 +789,35 @@ function migrateClusterEvents(oldValues) {
     return results;
 }
 
+function migrateNodeLogs(oldValues) {
+    if (!oldValues.logs || !oldValues.logs.journal || oldValues.logs.journal.enabled === false) {
+        return null;
+    }
+
+    const results = {
+        nodeLogs: {
+            enabled: true,
+        },
+        "alloy-logs": oldValues["alloy-logs"] || {}
+    };
+    results["alloy-logs"].enabled = true;
+
+    if (oldValues.logs.journal.units) {
+        results.nodeLogs.journal = {
+            units: oldValues.logs.journal.units
+        };
+    }
+
+    return results;
+}
+
 function migratePromOperatorObjects(oldValues) {
     if (oldValues.metrics
         && (oldValues.metrics.enabled === false
         || (oldValues.metrics.podMonitors && oldValues.metrics.podMonitors.enabled === false
         && oldValues.metrics.probes && oldValues.metrics.probes.enabled === false
         && oldValues.metrics.serviceMonitors && oldValues.metrics.serviceMonitors.enabled === false))) {
-        return null;
+        return {values: null, notes: []};
     }
 
     const results = {
@@ -875,27 +921,28 @@ function migrateProfiles(oldValues) {
     }
 
     const values = {
-        profiles: {
+        profiling: {
             enabled: true,
         },
         "alloy-profiles": oldValues["alloy-profiles"] || {}
     };
     values["alloy-profiles"].enabled = true;
 
-    values.profiles.ebpf = oldValues.profiles.ebpf;
-    if (values.profiles.ebpf && values.profiles.ebpf.extraRelabelingRules) {
-        values.profiles.ebpf.extraDiscoveryRules = values.profiles.ebpf.extraRelabelingRules;
-        delete values.profiles.ebpf.extraRelabelingRules;
+    // v1 profiles.enabled implicitly enables eBPF profiling
+    values.profiling.ebpf = oldValues.profiles.ebpf || { enabled: true };
+    if (values.profiling.ebpf && values.profiling.ebpf.extraRelabelingRules) {
+        values.profiling.ebpf.extraDiscoveryRules = values.profiling.ebpf.extraRelabelingRules;
+        delete values.profiling.ebpf.extraRelabelingRules;
     }
-    values.profiles.java = oldValues.profiles.java;
-    if (values.profiles.java && values.profiles.java.extraRelabelingRules) {
-        values.profiles.java.extraDiscoveryRules = values.profiles.java.extraRelabelingRules;
-        delete values.profiles.java.extraRelabelingRules;
+    values.profiling.java = oldValues.profiles.java;
+    if (values.profiling.java && values.profiling.java.extraRelabelingRules) {
+        values.profiling.java.extraDiscoveryRules = values.profiling.java.extraRelabelingRules;
+        delete values.profiling.java.extraRelabelingRules;
     }
-    values.profiles.pprof = oldValues.profiles.pprof;
-    if (values.profiles.pprof && values.profiles.pprof.extraRelabelingRules) {
-        values.profiles.pprof.extraDiscoveryRules = values.profiles.pprof.extraRelabelingRules;
-        delete values.profiles.pprof.extraRelabelingRules;
+    values.profiling.pprof = oldValues.profiles.pprof;
+    if (values.profiling.pprof && values.profiling.pprof.extraRelabelingRules) {
+        values.profiling.pprof.extraDiscoveryRules = values.profiling.pprof.extraRelabelingRules;
+        delete values.profiling.pprof.extraRelabelingRules;
     }
 
     return values;
@@ -988,6 +1035,7 @@ module.exports = {
     migrateDestinations,
     migrateClusterMetrics,
     migrateClusterEvents,
+    migrateNodeLogs,
     migratePodLogs,
     migrateAnnotationAutodiscovery,
     migrateApplicationObservability,

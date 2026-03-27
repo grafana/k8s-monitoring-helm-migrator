@@ -1,0 +1,68 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+    global:
+      podSecurityContext:
+        seLinuxOptions:
+          type: container_logreader_t
+  alloy-singleton:
+    presets:
+      - singleton
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    namespace: openshift-monitoring
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    service:
+      scheme: https
+      portName: https-main
+  collector: alloy-metrics
+telemetryServices:
+  kepler:
+    deploy: true
+hostMetrics:
+  linuxHosts:
+    enabled: true
+    namespace: openshift-monitoring
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    service:
+      scheme: https
+      portName: https
+  energyMetrics:
+    enabled: true
+  enabled: true
+  collector: alloy-metrics
+cluster:
+  name: openshift-cluster
+global:
+  platform: openshift
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+  collector: alloy-metrics
+

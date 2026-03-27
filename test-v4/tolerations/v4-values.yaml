@@ -1,0 +1,104 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+    controller:
+      tolerations:
+        - key: protected-node
+          effect: NoSchedule
+          operator: Exists
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+    controller:
+      tolerations:
+        - key: protected-node
+          effect: NoSchedule
+          operator: Exists
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+  node-exporter:
+    deploy: true
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+  windows-exporter:
+    deploy: true
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+  opencost:
+    deploy: true
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+    metricsSource: prometheus
+    opencost:
+      prometheus:
+        external:
+          url: http://prometheus.prometheus.svc:9090/api/v1/query
+      exporter:
+        defaultClusterId: tolerations-example-cluster
+  kepler:
+    deploy: true
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+costMetrics:
+  enabled: true
+  collector: alloy-metrics
+hostMetrics:
+  linuxHosts:
+    enabled: true
+  windowsHosts:
+    enabled: true
+  energyMetrics:
+    enabled: true
+  enabled: true
+  collector: alloy-metrics
+cluster:
+  name: tolerations-example-cluster
+autoInstrumentation:
+  enabled: true
+  spanMetricsOnly: true
+  beyla:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+  collector: alloy-metrics
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+alloy-operator:
+  tolerations:
+    - key: protected-node
+      effect: NoSchedule
+      operator: Exists
+  waitForAlloyRemoval:
+    tolerations:
+      - key: protected-node
+        effect: NoSchedule
+        operator: Exists
+

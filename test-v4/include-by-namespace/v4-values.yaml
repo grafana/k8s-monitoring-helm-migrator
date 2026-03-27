@@ -1,0 +1,153 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus-server.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+    tenantId: '1'
+    auth:
+      type: basic
+      username: loki
+      password: lokipassword
+  tempo:
+    type: otlp
+    protocol: http
+    url: http://tempo.tempo.svc:443/otlp
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+  pyroscope:
+    type: pyroscope
+    url: http://pyroscope.pyroscope.svc:4040
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+  alloy-receiver:
+    presets:
+      - deployment
+    alloy:
+      extraPorts:
+        - name: otlp-grpc
+          port: 4317
+          targetPort: 4317
+          protocol: TCP
+  alloy-profiles:
+    presets:
+      - privileged
+      - daemonset
+clusterMetrics:
+  enabled: true
+  cadvisor:
+    metricsTuning:
+      includeNamespaces:
+        - alpha
+        - bravo
+        - delta
+  kube-state-metrics:
+    namespaces:
+      - alpha
+      - bravo
+      - delta
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: include-by-namespace-test
+annotationAutodiscovery:
+  enabled: true
+  namespaces:
+    - alpha
+    - bravo
+    - delta
+  collector: alloy-metrics
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+  metrics:
+    filters:
+      metric:
+        - not(IsMatch(resource.attributes["k8s.namespace.name"], "^alpha|bravo|delta$"))
+      logs:
+        - not(IsMatch(resource.attributes["k8s.namespace.name"], "^alpha|bravo|delta$"))
+      traces:
+        - not(IsMatch(resource.attributes["k8s.namespace.name"], "^alpha|bravo|delta$"))
+  collector: alloy-receiver
+autoInstrumentation:
+  enabled: true
+  beyla:
+    config:
+      data:
+        discovery:
+          services:
+            - k8s_namespace: alpha
+            - k8s_namespace: bravo
+            - k8s_namespace: delta
+  collector: alloy-metrics
+clusterEvents:
+  enabled: true
+  namespaces:
+    - alpha
+    - bravo
+    - delta
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  namespaces:
+    - alpha
+    - bravo
+    - delta
+  collector: alloy-logs
+profiling:
+  enabled: true
+  ebpf:
+    namespaces:
+      - alpha
+      - bravo
+      - delta
+  java:
+    namespaces:
+      - alpha
+      - bravo
+      - delta
+  pprof:
+    namespaces:
+      - alpha
+      - bravo
+      - delta
+  collector: alloy-profiles
+prometheusOperatorObjects:
+  enabled: true
+  probes:
+    namespaces:
+      - alpha
+      - bravo
+      - delta
+  podMonitors:
+    namespaces:
+      - alpha
+      - bravo
+      - delta
+  serviceMonitors:
+    namespaces:
+      - alpha
+      - bravo
+      - delta
+  collector: alloy-metrics
+

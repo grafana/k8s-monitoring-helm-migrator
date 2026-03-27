@@ -1,0 +1,27 @@
+destinations:
+  metric-store:
+    type: prometheus
+    url: http://prometheus-server.prometheus.svc:9090/api/v1/write
+    metricEnrichment:
+      namespaceLabels:
+        - team_name
+        - environment
+      podLabels:
+        - app_version
+        - component
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+    alloy:
+      stabilityLevel: experimental
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: metric-enrichment-example
+

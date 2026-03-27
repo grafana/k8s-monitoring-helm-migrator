@@ -1,0 +1,56 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: mysql-integration-cluster
+integrations:
+  mysql:
+    instances:
+      - name: dev-db
+        exporter:
+          dataSourceName: root:password@database.dev.svc:3306/
+        logs:
+          enabled: false
+      - name: staging-db
+        exporter:
+          dataSource:
+            host: database.staging.svc
+            protocol: tcp
+            port: 3306
+            auth:
+              usernameKey: mysql-username
+              passwordKey: mysql-root-password
+        secret:
+          create: false
+          name: mysql-creds
+          namespace: staging
+        logs:
+          enabled: false
+      - name: prod-db
+        exporter:
+          dataSource:
+            host: database.prod.svc
+            auth:
+              username: db-admin
+              password: db-password
+        logs:
+          labelSelectors:
+            app.kubernetes.io/instance: prod-db
+  collector: alloy-metrics
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+

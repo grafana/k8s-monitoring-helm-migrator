@@ -1,0 +1,163 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+  tempo:
+    type: otlp
+    protocol: http
+    url: http://tempo.tempo.svc:443/otlp
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+  pyroscope:
+    type: pyroscope
+    url: http://pyroscope.pyroscope.svc:4040
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+  alloy-receiver:
+    presets:
+      - deployment
+    alloy:
+      extraPorts:
+        - name: otlp-grpc
+          port: 4317
+          targetPort: 4317
+          protocol: TCP
+  alloy-profiles:
+    presets:
+      - privileged
+      - daemonset
+clusterMetrics:
+  enabled: true
+  cadvisor:
+    metricsTuning:
+      excludeNamespaces:
+        - kube-system
+        - kube-public
+        - confidential
+  kube-state-metrics:
+    namespacesDenylist:
+      - kube-system
+      - kube-public
+      - confidential
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: exclude-by-namespace-cluster
+annotationAutodiscovery:
+  enabled: true
+  excludeNamespaces:
+    - kube-system
+    - kube-public
+    - confidential
+  collector: alloy-metrics
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+  metrics:
+    filters:
+      metric:
+        - IsMatch(resource.attributes["k8s.namespace.name"], "^kube-system|kube-public|confidential$")
+      logs:
+        - IsMatch(resource.attributes["k8s.namespace.name"], "^kube-system|kube-public|confidential$")
+      traces:
+        - IsMatch(resource.attributes["k8s.namespace.name"], "^kube-system|kube-public|confidential$")
+  processors:
+    k8sattributes:
+      filters:
+        byField:
+          - key: metadata.namespace
+            op: not-equals
+            value: kube-system
+          - key: metadata.namespace
+            op: not-equals
+            value: kube-public
+          - key: metadata.namespace
+            op: not-equals
+            value: confidential
+  collector: alloy-receiver
+autoInstrumentation:
+  enabled: true
+  beyla:
+    config:
+      data:
+        discovery:
+          services:
+            - k8s_namespace: .
+          exclude_services:
+            - k8s_namespace: kube-system
+            - k8s_namespace: kube-public
+            - k8s_namespace: confidential
+  collector: alloy-metrics
+clusterEvents:
+  enabled: true
+  excludeNamespaces:
+    - kube-system
+    - kube-public
+    - confidential
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  excludeNamespaces:
+    - kube-system
+    - kube-public
+    - confidential
+  collector: alloy-logs
+profiling:
+  enabled: true
+  ebpf:
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+      - confidential
+  java:
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+      - confidential
+  pprof:
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+      - confidential
+  collector: alloy-profiles
+prometheusOperatorObjects:
+  enabled: true
+  probes:
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+      - confidential
+  podMonitors:
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+      - confidential
+  serviceMonitors:
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+      - confidential
+  collector: alloy-metrics
+

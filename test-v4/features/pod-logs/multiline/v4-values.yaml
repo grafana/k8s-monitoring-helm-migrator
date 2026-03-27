@@ -1,0 +1,27 @@
+destinations:
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+    tenantId: 1
+    auth:
+      type: basic
+      username: loki
+      password: lokipassword
+collectors:
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: multiline-pod-logs
+podLogsViaLoki:
+  enabled: true
+  extraLogProcessingStages: |
+    stage.match {
+      selector = "{app_kubernetes_io_name=\"multiline-pod\"}"
+      stage.multiline {
+        firstline = "^level=[A-Z]+"
+      }
+    }
+  collector: alloy-logs
+

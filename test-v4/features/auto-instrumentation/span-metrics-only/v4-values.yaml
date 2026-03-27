@@ -1,0 +1,47 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.monitoring.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.logging.svc:3100/loki/api/v1/push
+  tempo:
+    type: otlp
+    url: http://tempo.tracing.svc:4317
+    tls:
+      insecure: true
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-receiver:
+    presets:
+      - deployment
+    alloy:
+      extraPorts:
+        - name: otlp-grpc
+          port: 4317
+          targetPort: 4317
+          protocol: TCP
+cluster:
+  name: span-metrics-only-cluster
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+  collector: alloy-receiver
+autoInstrumentation:
+  enabled: true
+  beyla:
+    deliverTracesToApplicationObservability: false
+  collector: alloy-metrics
+

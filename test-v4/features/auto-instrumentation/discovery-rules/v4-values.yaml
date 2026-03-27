@@ -1,0 +1,25 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+cluster:
+  name: auto-instrumentation-with-rules-cluster
+autoInstrumentation:
+  enabled: true
+  spanMetricsOnly: true
+  beyla:
+    config:
+      data:
+        discovery:
+          exclude_services:
+            - k8s_namespace: kube-system
+          services:
+            - k8s_pod_labels:
+                instrument: beyla
+  collector: alloy-metrics
+

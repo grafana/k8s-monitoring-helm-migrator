@@ -1,0 +1,19 @@
+destinations:
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+collectors:
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: node-logs-cluster
+nodeLogs:
+  enabled: true
+  journal:
+    units:
+      - kubelet.service
+      - containerd.service
+  collector: alloy-logs
+

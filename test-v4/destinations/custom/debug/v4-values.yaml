@@ -1,0 +1,70 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus-server.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+    tenantId: '1'
+    auth:
+      type: basic
+      username: loki
+      password: lokipassword
+  debug:
+    type: custom
+    config: |
+      otelcol.processor.filter "debug" {
+        metrics {
+          metric = ["name != \"alloy_build_info\""]
+        }
+
+        output {
+          metrics = [otelcol.exporter.debug.debug.input]
+          logs    = [otelcol.exporter.debug.debug.input]
+          traces  = [otelcol.exporter.debug.debug.input]
+        }
+      }
+      otelcol.exporter.debug "debug" {
+        verbosity = "detailed"
+      }
+    ecosystem: otlp
+    metrics:
+      enabled: true
+      target: otelcol.processor.filter.debug.input
+    logs:
+      enabled: true
+      target: otelcol.processor.filter.debug.input
+    traces:
+      enabled: true
+      target: otelcol.processor.filter.debug.input
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+    alloy:
+      stabilityLevel: experimental
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: debug-custom-destination
+podLogsViaLoki:
+  enabled: true
+  namespaces:
+    - default
+  labelSelectors:
+    app.kubernetes.io/name: alloy-metrics
+  collector: alloy-logs
+integrations:
+  destinations:
+    - prometheus
+    - debug
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name: alloy-metrics
+  collector: alloy-metrics
+

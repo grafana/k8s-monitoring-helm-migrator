@@ -1,0 +1,47 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+cluster:
+  name: log-metrics-example
+podLogsViaLoki:
+  enabled: true
+  extraLogProcessingStages: |-
+    stage.metrics {
+      metric.counter {
+        name        = "log_lines_total"
+        description = "total number of log lines"
+        prefix      = "my_custom_tracking_"
+
+        match_all         = true
+        action            = "inc"
+        max_idle_duration = "24h"
+      }
+    }
+  collector: alloy-logs
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-logs
+        metrics:
+          tuning:
+            includeMetrics:
+              - my_custom_tracking_.*
+  collector: alloy-metrics
+

@@ -1,0 +1,92 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+  tempo:
+    type: otlp
+    url: http://tempo.tempo.svc
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+    processors:
+      tailSampling:
+        enabled: true
+        decisionWait: 5s
+        numTraces: 100
+        expectedNewTracesPerSec: 10
+        decisionCache:
+          sampledCacheSize: 1000
+          nonSampledCacheSize: 10000
+        policies:
+          - name: keep-errors
+            type: status_code
+            status_codes:
+              - ERROR
+              - UNSET
+          - name: sample-slow-traces
+            type: latency
+            threshold_ms: 5000
+          - name: sample-15pct-traces
+            type: probabilistic
+            sampling_percentage: 15
+          - name: and-policy
+            type: and
+            and:
+              and_sub_policy:
+                - name: keep-all-error-codes
+                  type: numeric_attribute
+                  key: http.status_code
+                  min_value: 399
+                  max_value: 599
+                - name: keep-all-errors
+                  type: status_code
+                  status_codes:
+                    - ERROR
+                    - UNSET
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-receiver:
+    presets:
+      - deployment
+    alloy:
+      extraPorts:
+        - name: otlp-http
+          port: 4318
+          targetPort: 4318
+          protocol: TCP
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: tail-sampling
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      http:
+        enabled: true
+        port: 4318
+  connectors:
+    grafanaCloudMetrics:
+      enabled: true
+  collector: alloy-receiver
+

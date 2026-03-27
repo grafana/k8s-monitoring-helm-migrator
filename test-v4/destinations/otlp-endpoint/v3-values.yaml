@@ -1,0 +1,56 @@
+---
+cluster:
+  name: otlp-gateway-test
+
+destinations:
+  - name: otlp-gateway
+    type: otlp
+    url: https://otlp-gateway-my-region.grafana.net/otlp
+    protocol: http
+    auth:
+      type: basic
+      username: my-gateway-username
+      password: my-gateway-password
+    metrics: {enabled: true}
+    logs: {enabled: true}
+    traces: {enabled: true}
+    processors:
+      transform:
+        traces:
+          resource:
+            - set(resource.attributes["quoted"], "quted")
+          resourceFrom:
+            - string.format(`set(attributes["from_env"], %q)`, coalesce(sys.env("MY_ENV"), "undefined"))
+
+    sendingQueue:
+      enabled: true
+      blockOnOverflow: true
+      storage: otelcol.storage.file.otlp_gateway_queue_storage.handler
+      batch:
+        enabled: true
+        flushTimeout: 1s
+        sizer: items
+        minSize: 100
+        maxSize: 1000
+
+clusterMetrics:
+  enabled: true
+
+podLogs:
+  enabled: true
+
+alloy-metrics:
+  enabled: true
+  extraConfig: |
+    otelcol.storage.file "otlp_gateway_queue_storage" {
+      create_directory = true
+      directory = "/var/lib/otlp_gateway_queue_storage"
+    }
+
+alloy-logs:
+  enabled: true
+  extraConfig: |
+    otelcol.storage.file "otlp_gateway_queue_storage" {
+      create_directory = true
+      directory = "/var/lib/otlp_gateway_queue_storage"
+    }

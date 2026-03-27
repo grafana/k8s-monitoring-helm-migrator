@@ -1,0 +1,19 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+cluster:
+  name: dcgm-exporter-integration-cluster
+integrations:
+  dcgm-exporter:
+    instances:
+      - name: dcgm-exporter
+        labelSelectors:
+          app: nvidia-dcgm-exporter
+  collector: alloy-metrics
+

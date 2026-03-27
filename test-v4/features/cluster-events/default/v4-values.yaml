@@ -1,0 +1,14 @@
+destinations:
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/api/push
+collectors:
+  alloy-singleton:
+    presets:
+      - singleton
+cluster:
+  name: cluster-events-cluster
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+

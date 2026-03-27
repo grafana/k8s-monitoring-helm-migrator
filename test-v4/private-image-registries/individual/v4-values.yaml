@@ -1,0 +1,135 @@
+destinations:
+  prometheus:
+    type: prometheus
+    url: http://prometheus.prometheus.svc:9090/api/v1/write
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+  tempo:
+    type: otlp
+    url: http://tempo.tempo.svc:3200/api/v1/metrics
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+    processors:
+      tailSampling:
+        enabled: true
+        policies:
+          - name: always_sample-policy
+            type: always_sample
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-receiver:
+    presets:
+      - deployment
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+    image:
+      registry: my.registry.com
+      repository: kube-state-metrics/kube-state-metrics
+    imagePullSecrets:
+      - name: my-registry-creds
+  node-exporter:
+    deploy: true
+    image:
+      registry: my.registry.com
+      repository: prometheus/node-exporter
+    imagePullSecrets:
+      - name: my-registry-creds
+  windows-exporter:
+    deploy: true
+    image:
+      registry: my.registry.com
+      repository: prometheus-community/windows-exporter
+    imagePullSecrets:
+      - name: my-registry-creds
+  opencost:
+    deploy: true
+    imagePullSecrets:
+      - name: my-registry-creds
+    opencost:
+      exporter:
+        image:
+          registry: my.registry.com
+          repository: opencost/opencost
+        defaultClusterId: private-image-registries-example-cluster
+      prometheus:
+        external:
+          url: http://prometheus.prometheus.svc:9090/api/v1/query
+    metricsSource: prometheus
+  kepler:
+    deploy: true
+    image:
+      repository: quay.io/sustainable_computing_io/kepler
+    imagePullSecrets:
+      - name: my-registry-creds
+costMetrics:
+  enabled: true
+  collector: alloy-metrics
+hostMetrics:
+  linuxHosts:
+    enabled: true
+  windowsHosts:
+    enabled: true
+  energyMetrics:
+    enabled: true
+  enabled: true
+  collector: alloy-metrics
+cluster:
+  name: private-image-registries-example-cluster
+autoInstrumentation:
+  enabled: true
+  beyla:
+    image:
+      registry: my.registry.com
+      repository: grafana/beyla
+      pullSecrets:
+        - name: my-registry-creds
+    k8sCache:
+      image:
+        registry: my.registry.com
+        repository: grafana/beyla-k8s-cache
+        pullSecrets:
+          - name: my-registry-creds
+  collector: alloy-metrics
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      http:
+        enabled: true
+  collector: alloy-receiver
+alloy-operator:
+  image:
+    registry: my.registry.com
+    repository: grafana/alloy-operator
+    pullSecrets:
+      - name: my-registry-creds
+  waitForAlloyRemoval:
+    image:
+      registry: my.registry.com
+      repository: grafana/grafana/helm-chart-toolbox-kubectl
+      pullSecrets:
+        - name: my-registry-creds
+collectorCommon:
+  alloy:
+    image:
+      registry: my.registry.com
+      repository: grafana/alloy
+      pullSecrets:
+        - name: my-registry-creds
+    configReloader:
+      image:
+        registry: my.registry.com
+        repository: prometheus-operator/prometheus-config-reloader
+

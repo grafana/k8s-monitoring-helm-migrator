@@ -1,0 +1,25 @@
+destinations:
+  loki:
+    type: loki
+    url: http://loki.loki.svc:3100/loki/api/v1/push
+    tenantId: '1'
+    auth:
+      type: basic
+      username: loki
+      password: lokipassword
+collectors:
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+    alloy:
+      clustering:
+        enabled: true
+cluster:
+  name: pod-logs-via-k8s-api-cluster
+podLogsViaKubernetesApi:
+  enabled: true
+  namespaces:
+    - production
+  collector: alloy-logs
+
