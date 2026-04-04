@@ -604,7 +604,7 @@ playwright-core@1.58.0:
   resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.58.0.tgz#f0c74217837e5dda1ecfae78e214fe97112c1f97"
   integrity sha512-aaoB1RWrdNi3//rOeKuMiS65UCcgOVljU46At6eFcOFPFHWtd2weHRRow6z/n+Lec0Lvu0k9ZPKJSjPugikirw==
 
-playwright@^1.58.0:
+playwright@1.58.0:
   version "1.58.0"
   resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.58.0.tgz#f0a0d9b6b93d153338951ac7fb9dd8d0ea256e53"
   integrity sha512-2SVA0sbPktiIY/MCOPX8e86ehA/e+tDNq+e5Y8qjKYti2Z/JG7xnronT/TXTIkKbYGWlCbuucZ6dziEgkoEjQQ==
