@@ -1,0 +1,69 @@
+destinations:
+  metricsService:
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    proxyURL: https://localhost:8080
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+    tls: {}
+  logsService:
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    proxyURL: https://localhost:8080
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+    tls: {}
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: proxies-test
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+annotationAutodiscovery:
+  enabled: true
+  collector: alloy-metrics
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  collector: alloy-metrics
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
+  collector: alloy-metrics
+
