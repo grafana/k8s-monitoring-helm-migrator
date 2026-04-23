@@ -1,0 +1,100 @@
+destinations:
+  metricsService:
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  logsService:
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  tracesService:
+    type: otlp
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+    url: https://tempo.example.com
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+  alloy-receiver:
+    presets:
+      - deployment
+clusterMetrics:
+  enabled: true
+  kube-state-metrics:
+    metricLabelsAllowlist:
+      - pods=[*]
+    metricsTuning:
+      includeMetrics:
+        - kube_pod_labels
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics: {}
+cluster:
+  name: pod-labels-test
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  extraDiscoveryRules: |
+    rule {
+      source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_instance"]
+      action = "replace"
+      target_label = "instance"
+    }
+  collector: alloy-logs
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+  collector: alloy-receiver
+annotationAutodiscovery:
+  enabled: true
+  collector: alloy-metrics
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  collector: alloy-metrics
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+            - alloy-receiver
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
+  collector: alloy-metrics
+
