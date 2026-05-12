@@ -5,6 +5,7 @@
   "main": "convert.js",
   "author": "",
   "license": "ISC",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "test:web": "node scripts/test-web.js"
   },
