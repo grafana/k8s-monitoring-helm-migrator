@@ -12,7 +12,7 @@ const TELEMETRY_SERVICE_KEYS = ["node-exporter", "windows-exporter", "kube-state
 const DEPLOYMENT_FIELDS = new Set([
     "deploy", "resources", "tolerations", "image", "imagePullSecrets",
     "nameOverride", "fullnameOverride", "replicas", "autosharding",
-    "podAnnotations", "rbac",
+    "podAnnotations", "rbac", "extraArgs",
 ]);
 
 // Extra fields specific to opencost that go to telemetryServices (not costMetrics)
