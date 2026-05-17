@@ -1,8 +1,4 @@
 [submodule "k8s-monitoring-helm"]
 	path = k8s-monitoring-helm
 	url = https://github.com/grafana/k8s-monitoring-helm.git
-	branch = main
-[submodule "k8s-monitoring-helm-v4"]
-	path = k8s-monitoring-helm-v4
-	url = https://github.com/grafana/k8s-monitoring-helm.git
-	branch = feat/4.0
+	branch = 3.8-stable

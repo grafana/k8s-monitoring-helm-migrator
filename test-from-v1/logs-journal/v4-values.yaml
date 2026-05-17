@@ -1,0 +1,30 @@
+destinations:
+  logsService:
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: '12345'
+      password: It's a secret to everyone
+collectors:
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+cluster:
+  name: logs-journal
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+nodeLogs:
+  enabled: true
+  journal:
+    units: []
+  collector: alloy-logs
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+

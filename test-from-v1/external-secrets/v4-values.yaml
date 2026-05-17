@@ -1,0 +1,71 @@
+destinations:
+  metricsService:
+    type: prometheus
+    secret:
+      create: false
+      name: alloy-secret
+      namespace: monitoring
+    auth:
+      type: basic
+      usernameKey: prom_username
+      passwordKey: password
+  logsService:
+    type: loki
+    secret:
+      create: false
+      name: alloy-secret
+      namespace: monitoring
+    auth:
+      type: basic
+      usernameKey: loki_username
+      passwordKey: password
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: external-secrets-test
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+annotationAutodiscovery:
+  enabled: true
+  collector: alloy-metrics
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  collector: alloy-metrics
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
+  collector: alloy-metrics
+
