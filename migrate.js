@@ -1028,8 +1028,62 @@ function migrateCollectors(oldValues) {
     return values;
 }
 
+function migrateV1toV3(oldValues) {
+    const _ = (typeof require !== 'undefined') ? require('lodash') : window._;
+    let newValues = {};
+    let notes = [];
+
+    {
+        const results = migrateCluster(oldValues);
+        newValues = _.merge(newValues, results.values);
+        notes = notes.concat(results.notes);
+    }
+    newValues = _.merge(newValues, migrateGlobals(oldValues));
+
+    {
+        const results = migrateDestinations(oldValues);
+        newValues = _.merge(newValues, results.values);
+        notes = notes.concat(results.notes);
+    }
+
+    newValues = _.merge(newValues, migrateClusterMetrics(oldValues));
+    newValues = _.merge(newValues, migrateClusterEvents(oldValues));
+    newValues = _.merge(newValues, migrateNodeLogs(oldValues));
+    newValues = _.merge(newValues, migratePodLogs(oldValues));
+    {
+        const results = migrateApplicationObservability(oldValues);
+        newValues = _.merge(newValues, results.values);
+        notes = notes.concat(results.notes);
+    }
+    newValues = _.merge(newValues, migrateAnnotationAutodiscovery(oldValues));
+    newValues = _.merge(newValues, migrateAutoinstrumentation(oldValues));
+    {
+        const results = migratePromOperatorObjects(oldValues);
+        newValues = _.merge(newValues, results.values);
+        notes = notes.concat(results.notes);
+    }
+    newValues = _.merge(newValues, migrateProfiles(oldValues));
+    {
+        const results = migrateAlloyIntegration(oldValues);
+        newValues = _.merge(newValues, results.values);
+        notes = notes.concat(results.notes);
+    }
+    newValues = _.merge(newValues, migrateCollectors(oldValues));
+
+    if (newValues.integrations && newValues.integrations.alloy) {
+        for (const alloy of ["alloy-metrics", "alloy-singleton", "alloy-logs", "alloy-receiver", "alloy-profiles"]) {
+            if (newValues[alloy] && newValues[alloy].enabled === true) {
+                newValues.integrations.alloy.instances[0].labelSelectors["app.kubernetes.io/name"].push(alloy);
+            }
+        }
+    }
+
+    return { values: newValues, notes };
+}
+
 module.exports = {
     checkValues,
+    migrateV1toV3,
     migrateCluster,
     migrateGlobals,
     migrateDestinations,
