@@ -1,0 +1,44 @@
+destinations:
+  metricsService:
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    tenantId: 1000
+    auth:
+      type: basic
+      username: '12345'
+      password: It's a secret to everyone
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: metrics-only-test
+annotationAutodiscovery:
+  enabled: true
+  collector: alloy-metrics
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  collector: alloy-metrics
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
+  collector: alloy-metrics
+

@@ -1,0 +1,71 @@
+destinations:
+  metricsService:
+    type: otlp
+    protocol: http
+    metrics:
+      enabled: true
+    traces:
+      enabled: false
+    url: prometheus.example.com:443/api/v1/otlp
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+    tls: {}
+  logsService:
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: otel-metrics-service-test
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+annotationAutodiscovery:
+  enabled: true
+  collector: alloy-metrics
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  collector: alloy-metrics
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
+  collector: alloy-metrics
+

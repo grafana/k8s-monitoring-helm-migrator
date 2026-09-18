@@ -1,0 +1,100 @@
+destinations:
+  metricsService:
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  logsService:
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+    extraConfig: |
+      remote.kubernetes.configmap "mysql_config" {
+        name = "mysql-monitoring"
+        namespace = "mysql"
+      }
+
+      import.string "mysql" {
+        content = remote.kubernetes.configmap.mysql_config.data["metrics.alloy"]
+      }
+
+      mysql.metrics "primary" {
+        host = "mysql.mysql.svc.cluster.local"
+        instance = "primary"
+        namespace = "mysql"
+        secret_name = "mysql"
+        username = "root"
+        password_key = "mysql-root-password"
+        all_services = discovery.kubernetes.services.targets
+        metrics_destination = prometheus.relabel.metrics_service.receiver
+      }
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+    extraConfig: |
+      remote.kubernetes.configmap "mysql_config" {
+        name = "mysql-monitoring"
+        namespace = "mysql"
+      }
+
+      import.string "mysql" {
+        content = remote.kubernetes.configmap.mysql_config.data["logs.alloy"]
+      }
+
+      mysql.logs "primary" {
+        instance = "primary"
+        all_pods = discovery.relabel.pod_logs.output
+        logs_destination = loki.process.logs_service.receiver
+      }
+  alloy-singleton:
+    presets:
+      - singleton
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: service-integrations-test
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+annotationAutodiscovery:
+  enabled: true
+  collector: alloy-metrics
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  collector: alloy-metrics
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
+  collector: alloy-metrics
+

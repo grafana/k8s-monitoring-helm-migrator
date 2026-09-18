@@ -1,0 +1,113 @@
+destinations:
+  metricsService:
+    type: prometheus
+    url: https://prometheus.example.com/api/prom/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  logsService:
+    type: loki
+    url: https://loki.example.com/loki/api/v1/push
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  tracesService:
+    type: otlp
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+    url: https://tempo.example.com
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+  profilesService:
+    type: pyroscope
+    url: https://pyroscope.example.com
+    auth:
+      type: basic
+      username: 12345
+      password: It's a secret to everyone
+collectors:
+  alloy-metrics:
+    presets:
+      - clustered
+      - statefulset
+  alloy-logs:
+    presets:
+      - filesystem-log-reader
+      - daemonset
+  alloy-singleton:
+    presets:
+      - singleton
+  alloy-receiver:
+    presets:
+      - deployment
+  alloy-profiles:
+    presets:
+      - privileged
+      - daemonset
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+telemetryServices:
+  kube-state-metrics:
+    deploy: true
+cluster:
+  name: application-observability-test
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+podLogsViaLoki:
+  enabled: true
+  collector: alloy-logs
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+  connectors:
+    grafanaCloudMetrics:
+      enabled: true
+  collector: alloy-receiver
+annotationAutodiscovery:
+  enabled: true
+  collector: alloy-metrics
+prometheusOperatorObjects:
+  enabled: true
+  crds:
+    deploy: true
+  collector: alloy-metrics
+profiling:
+  enabled: true
+  ebpf:
+    enabled: true
+  java:
+    enabled: true
+  pprof:
+    enabled: true
+  collector: alloy-profiles
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+            - alloy-receiver
+            - alloy-profiles
+        metrics:
+          tuning:
+            useDefaultAllowList: false
+            includeMetrics:
+              - alloy_build_info
+  collector: alloy-metrics
+
