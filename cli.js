@@ -1,4 +1,3 @@
-const _ = require('lodash')
 const fs = require('fs');
 const yaml = require('js-yaml');
 
@@ -16,7 +15,7 @@ for (let i = 0; i < args.length; i++) {
 }
 
 if (!file) {
-  console.error("Usage: node cli.js [--mode v1-to-v3|v3-to-v4] <file>");
+  console.error("Usage: node cli.js [--mode v1-to-v3|v3-to-v4|v1-to-v4] <file>");
   process.exit(1);
 }
 
@@ -45,75 +44,38 @@ try {
       console.log(yaml.dump(newValues, yamlOptions));
       console.error("Notes: " + JSON.stringify(notes));
     }
+  } else if (mode === "v1-to-v4") {
+    const { checkValues, migrateV1toV3 } = require('./migrate.js');
+    const { migrateV3toV4 } = require('./migrate-v3-to-v4.js');
+
+    const validationError = checkValues(oldValues);
+    if (validationError) {
+      console.error("This does not appear to be a K8s Monitoring v1 values file:");
+      console.error(validationError);
+    } else {
+      // Step 1: v1 -> v3
+      const v3Result = migrateV1toV3(oldValues);
+      notes = notes.concat(v3Result.notes);
+
+      // Step 2: v3 -> v4
+      const v4Result = migrateV3toV4(v3Result.values);
+      newValues = v4Result.values;
+      notes = notes.concat(v4Result.notes);
+
+      console.log(yaml.dump(newValues, yamlOptions));
+      console.error("Notes: " + JSON.stringify(notes));
+    }
   } else {
-    const {
-      checkValues,
-      migrateCluster,
-      migrateGlobals,
-      migrateDestinations,
-      migrateClusterMetrics,
-      migrateClusterEvents,
-      migrateNodeLogs,
-      migratePodLogs,
-      migrateAnnotationAutodiscovery,
-      migrateApplicationObservability,
-      migrateAutoinstrumentation,
-      migratePromOperatorObjects,
-      migrateProfiles,
-      migrateAlloyIntegration,
-      migrateCollectors
-    } = require('./migrate.js');
+    const { checkValues, migrateV1toV3 } = require('./migrate.js');
 
     const clusterNotes = checkValues(oldValues)
     if (clusterNotes) {
       console.error("This does not appear to be a K8s Monitoring v1 values file:")
       console.error(clusterNotes);
     } else {
-
-      {
-        const results = migrateCluster(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-      newValues = _.merge(newValues, migrateGlobals(oldValues));
-
-      {
-        const results = migrateDestinations(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-
-      newValues = _.merge(newValues, migrateClusterMetrics(oldValues));
-      newValues = _.merge(newValues, migrateClusterEvents(oldValues));
-      newValues = _.merge(newValues, migrateNodeLogs(oldValues));
-      newValues = _.merge(newValues, migratePodLogs(oldValues));
-      {
-        const results = migrateApplicationObservability(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-      newValues = _.merge(newValues, migrateAnnotationAutodiscovery(oldValues));
-      newValues = _.merge(newValues, migrateAutoinstrumentation(oldValues));
-      {
-        const results = migratePromOperatorObjects(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-      newValues = _.merge(newValues, migrateProfiles(oldValues));
-      {
-        const results = migrateAlloyIntegration(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-      newValues = _.merge(newValues, migrateCollectors(oldValues));
-
-      if (newValues.integrations && newValues.integrations.alloy) {
-        for (const alloy of ["alloy-metrics", "alloy-singleton", "alloy-logs", "alloy-receiver", "alloy-profiles"]) {
-          if (newValues[alloy] && newValues[alloy].enabled === true) {
-            newValues.integrations.alloy.instances[0].labelSelectors["app.kubernetes.io/name"].push(alloy);
-          }
-        }
-      }
+      const result = migrateV1toV3(oldValues);
+      newValues = result.values;
+      notes = result.notes;
 
       console.log(yaml.dump(newValues, yamlOptions));
       console.error("Notes: " + JSON.stringify(notes));
