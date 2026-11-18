@@ -7,11 +7,37 @@ function updateLabels(mode) {
     document.getElementById('input-label').textContent = "values.yaml (v3)";
     document.getElementById('output-label').textContent = "values.yaml (v4)";
     document.getElementById('upload-label').textContent = "Upload v3 values.yaml file:";
+  } else if (mode === "v1-to-v4") {
+    document.getElementById('input-label').textContent = "values.yaml (v1)";
+    document.getElementById('output-label').textContent = "values.yaml (v4)";
+    document.getElementById('upload-label').textContent = "Upload v1 values.yaml file:";
   } else {
     document.getElementById('input-label').textContent = "values.yaml (v1)";
     document.getElementById('output-label').textContent = "values.yaml (v2/v3)";
     document.getElementById('upload-label').textContent = "Upload v1 values.yaml file:";
   }
+}
+
+function runV1toV3(oldValues) {
+  let newValues = {};
+  let notes = [];
+
+  const clusterNotes = checkValues(oldValues);
+  if (clusterNotes) {
+    return { values: {}, notes: ["This does not appear to be a K8s Monitoring v1 values file:", clusterNotes] };
+  }
+
+  const result = migrateV1toV3(oldValues);
+  return result;
+}
+
+function runV3toV4(oldValues) {
+  const validationError = checkValuesV3(oldValues);
+  if (validationError) {
+    return { values: {}, notes: ["This does not appear to be a K8s Monitoring v3 values file:", validationError] };
+  }
+
+  return migrateV3toV4(oldValues);
 }
 
 function processMigration() {
@@ -31,65 +57,26 @@ function processMigration() {
   const mode = getSelectedMode();
 
   if (mode === "v3-to-v4") {
-    const validationError = checkValuesV3(oldValues);
-    if (validationError) {
-      notes = notes.concat(["This does not appear to be a K8s Monitoring v3 values file:"], [validationError]);
+    const result = runV3toV4(oldValues);
+    newValues = result.values;
+    notes = result.notes;
+  } else if (mode === "v1-to-v4") {
+    // Step 1: v1 -> v3
+    const v3Result = runV1toV3(oldValues);
+    if (v3Result.notes.some(n => n.startsWith("This does not appear"))) {
+      newValues = v3Result.values;
+      notes = v3Result.notes;
     } else {
-      const result = migrateV3toV4(oldValues);
-      newValues = result.values;
-      notes = result.notes;
+      notes = notes.concat(v3Result.notes);
+      // Step 2: v3 -> v4
+      const v4Result = runV3toV4(v3Result.values);
+      newValues = v4Result.values;
+      notes = notes.concat(v4Result.notes);
     }
   } else {
-    const clusterNotes = checkValues(oldValues)
-    if (clusterNotes) {
-      notes = notes.concat(["This does not appear to be a K8s Monitoring v1 values file:"], clusterNotes);
-    } else {
-
-      {
-        const results = migrateCluster(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-      newValues = _.merge(newValues, migrateGlobals(oldValues));
-
-      {
-        const results = migrateDestinations(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-
-      newValues = _.merge(newValues, migrateClusterMetrics(oldValues));
-      newValues = _.merge(newValues, migrateClusterEvents(oldValues));
-      newValues = _.merge(newValues, migrateNodeLogs(oldValues));
-      newValues = _.merge(newValues, migratePodLogs(oldValues));
-      {
-        const results = migrateApplicationObservability(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-      newValues = _.merge(newValues, migrateAnnotationAutodiscovery(oldValues));
-      newValues = _.merge(newValues, migrateAutoinstrumentation(oldValues));
-      {
-        const results = migratePromOperatorObjects(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-      newValues = _.merge(newValues, migrateProfiles(oldValues));
-      {
-        const results = migrateAlloyIntegration(oldValues);
-        newValues = _.merge(newValues, results.values);
-        notes = notes.concat(results.notes);
-      }
-      newValues = _.merge(newValues, migrateCollectors(oldValues));
-
-      if (newValues.integrations && newValues.integrations.alloy) {
-        for (const alloy of ["alloy-metrics", "alloy-singleton", "alloy-logs", "alloy-receiver", "alloy-profiles"]) {
-          if (newValues[alloy] && newValues[alloy].enabled === true) {
-            newValues.integrations.alloy.instances[0].labelSelectors["app.kubernetes.io/name"].push(alloy);
-          }
-        }
-      }
-    }
+    const result = runV1toV3(oldValues);
+    newValues = result.values;
+    notes = result.notes;
   }
 
   const yamlOptions = {
